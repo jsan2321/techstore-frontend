@@ -1,0 +1,547 @@
+<section class="space-y-6">
+  <!-- Header -->
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Fulfillment</p>
+      <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)]">Orders</h1>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)]">Manage customer orders, view invoices, and transition fulfillment status.</p>
+    </div>
+    <button type="button" (click)="loadOrders()" [disabled]="isLoading()"
+      class="inline-flex items-center gap-2 rounded-full border border-[color:var(--sand-300)] bg-white px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] shadow-sm hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] transition-all cursor-pointer active:scale-95 disabled:opacity-50">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H17.2" />
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Filters & Search Bar -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <!-- Search Input -->
+    <div class="relative flex-1 min-w-[300px]">
+      <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-700)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input 
+        id="orders-search" 
+        type="text" 
+        placeholder="Search by ID, customer name, email or full name..."
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)"
+        class="w-full rounded-xl border border-[color:var(--sand-300)] bg-white/80 py-2.5 pl-10 pr-4 text-sm text-[color:var(--ink-900)] shadow-sm focus:outline-none focus:border-[color:var(--accent-600)] focus:bg-white transition-colors" 
+      />
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="flex flex-wrap gap-1.5 bg-[color:var(--sand-100)]/80 p-1 rounded-2xl border border-[color:var(--sand-200)]">
+      @for (filter of ['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']; track filter) {
+        <button
+          type="button"
+          (click)="setStatus($any(filter))"
+          class="rounded-xl px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer focus:outline-none"
+          [class.bg-[color:var(--ink-900)]]="statusFilter() === filter"
+          [class.text-white]="statusFilter() === filter"
+          [class.shadow-sm]="statusFilter() === filter"
+          [class.text-[color:var(--ink-700)]]="statusFilter() !== filter"
+          [class.hover:text-[color:var(--ink-900)]]="statusFilter() !== filter"
+        >
+          {{ filter }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  @if (errorMsg()) {
+    <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 animate-fade-in flex gap-3 items-center">
+      <svg class="h-5 w-5 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>{{ errorMsg() }}</span>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="py-12">
+      <app-loading-spinner label="Loading orders database"></app-loading-spinner>
+    </div>
+  }
+
+  <!-- Table View -->
+  @if (!isLoading() && filteredOrders().length > 0) {
+    <div class="overflow-x-auto rounded-2xl border border-[color:var(--sand-200)] bg-white/85 shadow-[0_18px_45px_-40px_rgba(32,24,16,0.6)] backdrop-blur-md">
+      <table class="w-full text-sm text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[color:var(--sand-200)] bg-[color:var(--sand-50)] text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">
+            <th class="px-6 py-4">ID</th>
+            <th class="px-6 py-4">Customer</th>
+            <th class="px-6 py-4">Date</th>
+            <th class="px-6 py-4">Items / Total</th>
+            <th class="px-6 py-4">Fulfillment / Payment</th>
+            <th class="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[color:var(--sand-100)] text-[color:var(--ink-900)]">
+          @for (order of filteredOrders(); track order.id) {
+            <tr class="transition-colors hover:bg-[color:var(--sand-100)]/40">
+              <!-- ID -->
+              <td class="px-6 py-4 font-semibold">
+                <button type="button" (click)="openDetails(order)" class="hover:underline text-[color:var(--accent-600)] font-bold text-left cursor-pointer focus:outline-none">
+                  #{{ order.id }}
+                </button>
+              </td>
+
+              <!-- Customer Details -->
+              <td class="px-6 py-4">
+                @if (order.user) {
+                  <div class="font-medium text-[color:var(--ink-900)]">{{ order.user.firstName }} {{ order.user.lastName }}</div>
+                  <div class="text-xs text-[color:var(--ink-700)] font-sans">{{ order.user.email }}</div>
+                } @else {
+                  <span class="text-[color:var(--ink-700)] italic">Unknown Customer</span>
+                }
+              </td>
+
+              <!-- Order Date -->
+              <td class="px-6 py-4 text-xs text-[color:var(--ink-700)] font-sans">
+                {{ order.orderDate | date: 'medium' }}
+              </td>
+
+              <!-- Items & Total -->
+              <td class="px-6 py-4 font-sans text-xs">
+                <div class="font-bold text-[color:var(--ink-900)]">${{ order.totalAmount | number: '1.2-2' }}</div>
+                <div class="text-[color:var(--ink-700)] mt-0.5">{{ order.totalItems }} {{ order.totalItems === 1 ? 'item' : 'items' }}</div>
+              </td>
+
+              <!-- Status Badges -->
+              <td class="px-6 py-4 space-y-1.5">
+                <!-- Order Status -->
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] uppercase tracking-widest text-[color:var(--ink-700)] font-bold">Status:</span>
+                  <span 
+                    class="px-2 py-0.5 rounded-full text-[0.6rem] font-bold uppercase tracking-wider border"
+                    [class.bg-emerald-50]="order.status === 'DELIVERED'"
+                    [class.text-emerald-700]="order.status === 'DELIVERED'"
+                    [class.border-emerald-200]="order.status === 'DELIVERED'"
+                    [class.bg-amber-50]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                    [class.text-amber-700]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                    [class.border-amber-200]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                    [class.bg-rose-50]="order.status === 'CANCELLED'"
+                    [class.text-rose-700]="order.status === 'CANCELLED'"
+                    [class.border-rose-200]="order.status === 'CANCELLED'"
+                  >
+                    {{ order.status }}
+                  </span>
+                </div>
+
+                <!-- Payment Status -->
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] uppercase tracking-widest text-[color:var(--ink-700)] font-bold">Payment:</span>
+                  <span 
+                    class="px-2 py-0.5 rounded-full text-[0.6rem] font-bold uppercase tracking-wider border"
+                    [class.bg-emerald-50]="order.paymentStatus === 'CAPTURED'"
+                    [class.text-emerald-700]="order.paymentStatus === 'CAPTURED'"
+                    [class.border-emerald-200]="order.paymentStatus === 'CAPTURED'"
+                    [class.bg-amber-50]="order.paymentStatus === 'INITIATED'"
+                    [class.text-amber-700]="order.paymentStatus === 'INITIATED'"
+                    [class.border-amber-200]="order.paymentStatus === 'INITIATED'"
+                    [class.bg-rose-50]="order.paymentStatus === 'FAILED'"
+                    [class.text-rose-700]="order.paymentStatus === 'FAILED'"
+                    [class.border-rose-200]="order.paymentStatus === 'FAILED'"
+                  >
+                    {{ order.paymentStatus ?? 'N/A' }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- Operations & Transition Triggers -->
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <!-- View details side drawer trigger -->
+                  <button type="button" (click)="openDetails(order)"
+                    class="rounded-lg border border-[color:var(--sand-300)] bg-white px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-100)] hover:border-[color:var(--accent-600)] transition-all cursor-pointer focus:outline-none">
+                    Inspect
+                  </button>
+
+                  <!-- Status transitions triggers -->
+                  @if (order.status === 'PENDING') {
+                    <button type="button" (click)="processOrder(order)" [disabled]="isInProgress(order.id)"
+                      class="rounded-lg bg-[color:var(--ink-900)] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-[color:var(--ink-700)] disabled:opacity-50 transition-all cursor-pointer focus:outline-none active:scale-95">
+                      Process
+                    </button>
+                  }
+                  @if (order.status === 'PROCESSING') {
+                    <button type="button" (click)="shipOrder(order)" [disabled]="isInProgress(order.id)"
+                      class="rounded-lg bg-[color:var(--ink-900)] px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-[color:var(--ink-700)] disabled:opacity-50 transition-all cursor-pointer focus:outline-none active:scale-95">
+                      Ship
+                    </button>
+                  }
+                  @if (order.status === 'SHIPPED') {
+                    <button type="button" (click)="deliverOrder(order)" [disabled]="isInProgress(order.id)"
+                      class="rounded-lg bg-emerald-600 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer focus:outline-none active:scale-95">
+                      Deliver
+                    </button>
+                  }
+
+                  <!-- Cancel Transition trigger -->
+                  @if (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') {
+                    <button type="button" (click)="openCancelModal(order)" [disabled]="isInProgress(order.id)"
+                      class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-red-600 hover:bg-red-100 disabled:opacity-50 transition-all cursor-pointer focus:outline-none active:scale-95">
+                      Cancel
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    
+    <p class="text-xs text-[color:var(--ink-700)] font-sans">
+      Showing {{ filteredOrders().length }} order(s) under filter.
+    </p>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading() && !errorMsg() && filteredOrders().length === 0) {
+    <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[color:var(--sand-300)] bg-white/50 px-6 py-16 text-center">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--sand-100)] text-[color:var(--accent-500)] border border-[color:var(--sand-200)] shadow-inner">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      </div>
+      <h3 class="mt-4 text-lg font-semibold text-[color:var(--ink-900)]">No orders found</h3>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)]">We couldn't find any orders matching "{{ searchQuery() }}" under the "{{ statusFilter() }}" filter status.</p>
+    </div>
+  }
+</section>
+
+<!-- ── Order Detail Modal Drawer ─────────────────────────────────────────── -->
+@if (selectedOrder(); as order) {
+  <div class="fixed inset-0 z-50 flex justify-end" (click)="closeDetails()">
+    <!-- Backdrop overlay -->
+    <div class="absolute inset-0 bg-[color:var(--ink-900)]/40 backdrop-blur-xs transition-opacity animate-fade-in"></div>
+
+    <!-- Panel Drawer -->
+    <div class="relative z-10 w-full max-w-lg h-full bg-white border-l border-[color:var(--sand-300)] shadow-2xl flex flex-col justify-between overflow-hidden animate-slide-in-right font-sans" (click)="$event.stopPropagation()">
+      
+      <!-- Drawer Header -->
+      <div class="px-6 py-5 border-b border-[color:var(--sand-200)] flex items-center justify-between bg-[color:var(--sand-50)]">
+        <div>
+          <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--accent-600)]">Order Fulfillment Console</span>
+          <h2 class="text-xl font-semibold text-[color:var(--ink-900)] font-display mt-0.5">Order #{{ order.id }}</h2>
+        </div>
+        <button type="button" (click)="closeDetails()" class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-[color:var(--sand-200)] text-[color:var(--ink-700)] transition-colors cursor-pointer" title="Close">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Drawer Content -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- Status Badges row -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)]/50 p-4">
+            <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Order Status</span>
+            <span 
+              class="mt-1.5 inline-block px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-wider border"
+              [class.bg-emerald-50]="order.status === 'DELIVERED'"
+              [class.text-emerald-700]="order.status === 'DELIVERED'"
+              [class.border-emerald-200]="order.status === 'DELIVERED'"
+              [class.bg-amber-50]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+              [class.text-amber-700]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+              [class.border-amber-200]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+              [class.bg-rose-50]="order.status === 'CANCELLED'"
+              [class.text-rose-700]="order.status === 'CANCELLED'"
+              [class.border-rose-200]="order.status === 'CANCELLED'"
+            >
+              {{ order.status }}
+            </span>
+          </div>
+
+          <div class="rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)]/50 p-4">
+            <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Payment Status</span>
+            <span 
+              class="mt-1.5 inline-block px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-wider border"
+              [class.bg-emerald-50]="order.paymentStatus === 'CAPTURED'"
+              [class.text-emerald-700]="order.paymentStatus === 'CAPTURED'"
+              [class.border-emerald-200]="order.paymentStatus === 'CAPTURED'"
+              [class.bg-amber-50]="order.paymentStatus === 'INITIATED'"
+              [class.text-amber-700]="order.paymentStatus === 'INITIATED'"
+              [class.border-amber-200]="order.paymentStatus === 'INITIATED'"
+              [class.bg-rose-50]="order.paymentStatus === 'FAILED'"
+              [class.text-rose-700]="order.paymentStatus === 'FAILED'"
+              [class.border-rose-200]="order.paymentStatus === 'FAILED'"
+            >
+              {{ order.paymentStatus ?? 'N/A' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Customer Card -->
+        <div class="space-y-3">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Customer Account</h3>
+          @if (order.user; as user) {
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Full Name</span>
+                <span class="font-medium text-[color:var(--ink-900)] text-sm">{{ user.firstName }} {{ user.lastName }}</span>
+              </div>
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Email</span>
+                <span class="font-medium text-[color:var(--ink-900)] text-sm">{{ user.email }}</span>
+              </div>
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">User Verification</span>
+                <div class="mt-1">
+                  @if (user.emailVerified) {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-emerald-700 border border-emerald-200">Verified</span>
+                  } @else {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700 border border-amber-200">Pending</span>
+                  }
+                </div>
+              </div>
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Account ID</span>
+                <span class="font-medium text-[color:var(--ink-900)] text-sm">#{{ user.id }}</span>
+              </div>
+            </div>
+          } @else {
+            <p class="text-xs text-[color:var(--ink-700)] italic">No customer account associated with this order.</p>
+          }
+        </div>
+
+        <!-- Shipping Address & Delivery Notes -->
+        <div class="space-y-3">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Shipping & Delivery Instructions</h3>
+          @if (order.shippingAddress; as addr) {
+            <div class="rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)]/50 p-4 space-y-3 text-xs text-[color:var(--ink-900)]">
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block mb-0.5">Recipient Full Name</span>
+                <span class="font-semibold text-sm">{{ addr.fullName }}</span>
+              </div>
+              <div>
+                <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block mb-0.5">Shipping Destination</span>
+                <p>{{ addr.addressLine1 }}</p>
+                @if (addr.addressLine2) {
+                  <p>{{ addr.addressLine2 }}</p>
+                }
+                <p>{{ addr.city }}, {{ addr.state }} {{ addr.postalCode }}</p>
+                <p>{{ addr.country }}</p>
+              </div>
+
+              <!-- Delivery notes slot -->
+              @if (addr.deliveryNotes) {
+                <div class="pt-3 border-t border-[color:var(--sand-200)]">
+                  <div class="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[color:var(--accent-600)]">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <span>Delivery Instructions Note</span>
+                  </div>
+                  <p class="mt-1.5 text-xs text-[color:var(--ink-700)] italic bg-amber-50/50 p-3 rounded-xl border border-amber-200/50 leading-relaxed shadow-inner">
+                    "{{ addr.deliveryNotes }}"
+                  </p>
+                </div>
+              } @else {
+                <div class="pt-3 border-t border-[color:var(--sand-200)] text-[9px] font-bold uppercase tracking-widest text-[color:var(--ink-500)] italic">
+                  No custom delivery instructions provided by client.
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-xs text-[color:var(--ink-700)] italic">No shipping details logged.</p>
+          }
+        </div>
+
+        <!-- Itemized Products list -->
+        <div class="space-y-3">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Order Items ({{ order.orderItems.length }})</h3>
+          <div class="space-y-2">
+            @for (item of order.orderItems; track item.productId) {
+              <div class="flex items-center justify-between gap-4 rounded-xl border border-[color:var(--sand-200)] bg-[color:var(--sand-50)]/50 p-3">
+                <div class="flex items-center gap-3">
+                  <!-- Image thumbnail -->
+                  <div class="h-12 w-12 overflow-hidden rounded-lg border border-[color:var(--sand-300)] bg-white shrink-0">
+                    @if (item.imageUrl) {
+                      <img class="h-full w-full object-cover" [src]="item.imageUrl" [alt]="item.productName" />
+                    } @else {
+                      <div class="flex h-full items-center justify-center text-[8px] uppercase font-bold tracking-widest text-[color:var(--ink-500)]">No img</div>
+                    }
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-[color:var(--ink-900)] leading-tight">{{ item.productName }}</h4>
+                    <p class="text-[10px] text-[color:var(--ink-700)] mt-0.5">Qty {{ item.quantity }} × ${{ item.unitPrice | number: '1.2-2' }}</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-[color:var(--ink-900)]">${{ item.totalPrice | number: '1.2-2' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Price breakdown and free shipping badge -->
+        <div class="space-y-3">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Summary</h3>
+          <div class="text-xs space-y-2 rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)]/30 p-4">
+            <div class="flex justify-between text-[color:var(--ink-700)]">
+              <span>Estimated Delivery:</span>
+              <span class="font-medium text-[color:var(--ink-900)]">
+                {{ order.estimatedDelivery ? (order.estimatedDelivery | date: 'mediumDate') : 'TBD' }}
+              </span>
+            </div>
+            <div class="flex justify-between text-[color:var(--ink-700)] items-center">
+              <span>Shipping Fee:</span>
+              <span class="text-[color:var(--leaf-500)] font-bold uppercase tracking-wider text-[10px] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Shipping Free</span>
+            </div>
+            <div class="flex justify-between text-sm font-bold text-[color:var(--ink-900)] pt-2 border-t border-dashed border-[color:var(--sand-300)]">
+              <span>Total amount invoiced:</span>
+              <span>${{ order.totalAmount | number: '1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payments audit logs -->
+        <div class="space-y-3">
+          <h3 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Payment Audit Trail</h3>
+          <div class="text-xs space-y-2 rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)]/30 p-4">
+            <div class="flex justify-between">
+              <span class="text-[color:var(--ink-700)]">Payment Method:</span>
+              <span class="font-semibold uppercase text-[color:var(--ink-900)]">{{ order.paymentMethod }}</span>
+            </div>
+            @if (order.paymentProviderOrderId) {
+              <div class="flex justify-between">
+                <span class="text-[color:var(--ink-700)]">PayPal Token/Order:</span>
+                <span class="font-mono text-[color:var(--ink-900)]">{{ order.paymentProviderOrderId }}</span>
+              </div>
+            }
+            @if (order.paymentProviderCaptureId) {
+              <div class="flex justify-between">
+                <span class="text-[color:var(--ink-700)]">PayPal Capture ID:</span>
+                <span class="font-mono text-[color:var(--ink-900)]">{{ order.paymentProviderCaptureId }}</span>
+              </div>
+            }
+            @if (order.paymentFailureReason) {
+              <div class="rounded-xl border border-red-200 bg-red-50 p-3 text-red-700">
+                <span class="font-bold block mb-1">Audit Log Failure Report:</span>
+                {{ order.paymentFailureReason }}
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer Actions -->
+      <div class="px-6 py-5 border-t border-[color:var(--sand-200)] bg-[color:var(--sand-50)] flex items-center justify-between gap-3">
+        <div>
+          @if (isInProgress(order.id)) {
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-[color:var(--accent-600)]">
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Transitioning...</span>
+            </div>
+          }
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Lifecycle Transition shortcuts inside drawer -->
+          @if (order.status === 'PENDING') {
+            <button type="button" (click)="processOrder(order)" [disabled]="isInProgress(order.id)"
+              class="rounded-full bg-[color:var(--ink-900)] px-4 py-2 text-xs font-bold uppercase tracking-widest text-white hover:bg-[color:var(--ink-700)] disabled:opacity-50 transition-all cursor-pointer shadow-sm active:scale-95">
+              Process Order
+            </button>
+          }
+          @if (order.status === 'PROCESSING') {
+            <button type="button" (click)="shipOrder(order)" [disabled]="isInProgress(order.id)"
+              class="rounded-full bg-[color:var(--ink-900)] px-4 py-2 text-xs font-bold uppercase tracking-widest text-white hover:bg-[color:var(--ink-700)] disabled:opacity-50 transition-all cursor-pointer shadow-sm active:scale-95">
+              Ship Order
+            </button>
+          }
+          @if (order.status === 'SHIPPED') {
+            <button type="button" (click)="deliverOrder(order)" [disabled]="isInProgress(order.id)"
+              class="rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white hover:bg-emerald-700 disabled:opacity-50 transition-all cursor-pointer shadow-sm active:scale-95">
+              Deliver Order
+            </button>
+          }
+          @if (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') {
+            <button type="button" (click)="openCancelModal(order)" [disabled]="isInProgress(order.id)"
+              class="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-red-600 hover:bg-red-100 disabled:opacity-50 transition-all cursor-pointer shadow-sm active:scale-95">
+              Cancel Order
+            </button>
+          }
+          <button type="button" (click)="closeDetails()"
+            class="rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-100)] cursor-pointer">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Cancellation Reason Modal Overlay ─────────────────────────────────── -->
+@if (isCancelModalOpen()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-black/40 animate-fade-in" (click)="closeCancelModal()">
+    <div class="w-full max-w-md rounded-3xl border border-[color:var(--sand-300)] bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] space-y-6" (click)="$event.stopPropagation()">
+      <div class="flex items-start gap-4">
+        <div class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-200 shadow-inner shrink-0">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-lg font-semibold text-[color:var(--ink-900)]">Cancel Order Fulfillment</h3>
+          <p class="text-xs text-[color:var(--ink-700)] leading-relaxed font-sans">
+            You are about to cancel order <span class="font-bold">#{{ orderToCancel()?.id }}</span>. This will halt all subsequent delivery operations and update the customer's purchase status.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <label for="cancellationReason" class="font-bold uppercase tracking-widest text-[color:var(--ink-700)]">
+          Reason for Cancellation (optional)
+        </label>
+        <textarea
+          id="cancellationReason"
+          rows="3"
+          placeholder="Specify a reason (e.g., Customer requested refund, item out of stock, shipping issue...)"
+          [ngModel]="cancellationReason()"
+          (ngModelChange)="cancellationReason.set($event)"
+          class="w-full resize-none rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none focus:bg-white transition-all font-sans"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeCancelModal()"
+          [disabled]="isCancelling()"
+          class="rounded-full border border-[color:var(--sand-300)] bg-white px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:bg-[color:var(--sand-100)] cursor-pointer disabled:opacity-50"
+        >
+          Keep Order Active
+        </button>
+        <button
+          type="button"
+          (click)="confirmCancelOrder()"
+          [disabled]="isCancelling()"
+          class="rounded-full bg-red-600 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-red-700 shadow-sm cursor-pointer disabled:opacity-50 flex items-center gap-2 active:scale-95"
+        >
+          @if (isCancelling()) {
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Cancelling...</span>
+          } @else {
+            <span>Cancel Order</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

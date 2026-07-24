@@ -1,0 +1,345 @@
+<section class="space-y-6">
+
+  <!-- Header -->
+  <div>
+    <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Management</p>
+    <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)]">Users</h1>
+    <p class="mt-2 text-sm text-[color:var(--ink-700)]">Search, review, deactivate, reactivate, and delete user accounts.</p>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center gap-3">
+    <!-- Search -->
+    <div class="relative flex-1 min-w-[220px]">
+      <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-700)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        id="users-search"
+        type="text"
+        placeholder="Search by name or email..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="w-full rounded-xl border border-[color:var(--sand-300)] bg-white/80 py-2.5 pl-10 pr-4 text-sm text-[color:var(--ink-900)] shadow-sm focus:outline-none focus:border-[color:var(--accent-600)]"
+      />
+    </div>
+    <!-- Status tabs -->
+    <div class="flex gap-1 rounded-xl border border-[color:var(--sand-300)] bg-white/60 p-1 shadow-sm">
+      @for (tab of [['ALL','All'],['ACTIVE','Active'],['INACTIVE','Inactive']]; track tab[0]) {
+        <button
+          type="button"
+          (click)="setStatus($any(tab[0]))"
+          class="rounded-lg px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-all"
+          [class.bg-[color:var(--ink-900)]]="statusFilter() === tab[0]"
+          [class.text-white]="statusFilter() === tab[0]"
+          [class.text-[color:var(--ink-700)]]="statusFilter() !== tab[0]"
+          [class.hover:bg-[color:var(--sand-100)]]="statusFilter() !== tab[0]"
+        >{{ tab[1] }}</button>
+      }
+    </div>
+    <!-- Reload -->
+    <button type="button" (click)="loadUsers()" class="flex h-9 w-9 items-center justify-center rounded-xl border border-[color:var(--sand-300)] bg-white/80 text-[color:var(--ink-700)] shadow-sm hover:bg-[color:var(--sand-100)] transition-colors" title="Reload">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+    </button>
+  </div>
+
+  <!-- Error -->
+  @if (errorMsg()) {
+    <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMsg() }}</div>
+  }
+
+  <!-- Loading -->
+  @if (isLoading()) {
+    <div class="space-y-3">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="h-14 animate-pulse rounded-2xl bg-[color:var(--sand-100)]"></div>
+      }
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading() && filteredUsers().length > 0) {
+    <div class="overflow-x-auto rounded-2xl border border-[color:var(--sand-200)] bg-white/85 shadow-sm">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-[color:var(--sand-200)] bg-[color:var(--sand-50)]">
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Name</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Email</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Roles</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Status</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Verified</th>
+            <th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[color:var(--sand-100)]">
+          @for (user of filteredUsers(); track user.id) {
+            <tr class="transition-colors hover:bg-[color:var(--sand-50)]">
+              <td class="px-5 py-3.5 font-medium text-[color:var(--ink-900)]">{{ user.firstName }} {{ user.lastName }}</td>
+              <td class="px-5 py-3.5 text-[color:var(--ink-700)]">{{ user.email }}</td>
+              <td class="px-5 py-3.5">
+                <div class="flex flex-wrap gap-1">
+                  @for (role of user.roles; track role) {
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                      [class.bg-[color:var(--accent-100)]]="role.includes('ADMIN')"
+                      [class.text-[color:var(--accent-700)]]="role.includes('ADMIN')"
+                      [class.bg-[color:var(--sand-200)]]="!role.includes('ADMIN')"
+                      [class.text-[color:var(--ink-700)]]="!role.includes('ADMIN')">
+                      {{ role.replace('ROLE_', '') }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td class="px-5 py-3.5">
+                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest"
+                  [class.bg-emerald-50]="user.status === 'ACTIVE'"
+                  [class.text-emerald-700]="user.status === 'ACTIVE'"
+                  [class.bg-[color:var(--sand-200)]]="user.status !== 'ACTIVE'"
+                  [class.text-[color:var(--ink-700)]]="user.status !== 'ACTIVE'">
+                  <span class="h-1.5 w-1.5 rounded-full"
+                    [class.bg-emerald-500]="user.status === 'ACTIVE'"
+                    [class.bg-[color:var(--ink-400)]]="user.status !== 'ACTIVE'"></span>
+                  {{ user.status }}
+                </span>
+              </td>
+              <td class="px-5 py-3.5">
+                @if (user.emailVerified) {
+                  <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                } @else {
+                  <svg class="h-4 w-4 text-[color:var(--sand-400)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                }
+              </td>
+              <td class="px-5 py-3.5">
+                <div class="flex justify-end gap-2">
+                  @if (confirmDeleteId() === user.id) {
+                    <span class="text-xs text-[color:var(--ink-700)] self-center">Delete?</span>
+                    <button type="button" (click)="executeDelete(user.id)" [disabled]="isInProgress(user.id)"
+                      class="rounded-lg bg-red-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white transition hover:bg-red-600 disabled:opacity-50">Yes</button>
+                    <button type="button" (click)="cancelDelete()"
+                      class="rounded-lg border border-[color:var(--sand-300)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:bg-[color:var(--sand-100)]">No</button>
+                  } @else {
+                    <button type="button" (click)="viewUserDetails(user)"
+                      class="rounded-lg border border-[color:var(--sand-300)] bg-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--accent-600)] transition hover:border-[color:var(--accent-600)] hover:bg-[color:var(--sand-100)]">
+                      Details
+                    </button>
+                    @if (user.status === 'ACTIVE') {
+                      <button type="button" (click)="deactivate(user)" [disabled]="isInProgress(user.id)"
+                        class="rounded-lg border border-[color:var(--sand-300)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:bg-[color:var(--sand-100)] disabled:opacity-50">
+                        {{ isInProgress(user.id) ? '...' : 'Deactivate' }}
+                      </button>
+                    } @else {
+                      <button type="button" (click)="reactivate(user)" [disabled]="isInProgress(user.id)"
+                        class="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50">
+                        {{ isInProgress(user.id) ? '...' : 'Reactivate' }}
+                      </button>
+                    }
+                    <button type="button" (click)="confirmDelete(user.id)" [disabled]="isInProgress(user.id)"
+                      class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-red-600 transition hover:bg-red-100 disabled:opacity-50">Delete</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-[color:var(--ink-700)]">Showing {{ filteredUsers().length }} user(s)</p>
+  }
+
+  <!-- Empty state -->
+  @if (!isLoading() && !errorMsg() && filteredUsers().length === 0) {
+    <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[color:var(--sand-300)] bg-white/50 px-6 py-16 text-center">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--sand-100)] text-[color:var(--accent-500)]">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      </div>
+      <h3 class="mt-4 text-lg font-semibold text-[color:var(--ink-900)]">No users found</h3>
+      <p class="mt-2 max-w-sm text-sm text-[color:var(--ink-700)]">Try adjusting your search or filter.</p>
+    </div>
+  }
+
+</section>
+
+<!-- ── User Details Modal Drawer ─────────────────────────────────────────── -->
+@if (selectedUser()) {
+  <div class="fixed inset-0 z-50 flex justify-end" (click)="closeDetails()">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-[color:var(--ink-900)]/40 backdrop-blur-xs transition-opacity animate-fade-in"></div>
+
+    <!-- Panel / Drawer (slide-in from right) -->
+    <div class="relative z-10 w-full max-w-lg h-full bg-white border-l border-[color:var(--sand-300)] shadow-2xl flex flex-col justify-between overflow-hidden animate-slide-in-right" (click)="$event.stopPropagation()">
+      
+      <!-- Drawer Header -->
+      <div class="px-6 py-5 border-b border-[color:var(--sand-200)] flex items-center justify-between bg-[color:var(--sand-50)]">
+        <div>
+          <span class="text-[9px] font-bold uppercase tracking-widest text-[color:var(--accent-600)]">User Profile Inspection</span>
+          <h2 class="text-xl font-semibold text-[color:var(--ink-900)] font-display mt-0.5">
+            {{ selectedUser()?.firstName }} {{ selectedUser()?.lastName }}
+          </h2>
+        </div>
+        <button type="button" (click)="closeDetails()" class="h-8 w-8 flex items-center justify-center rounded-full hover:bg-[color:var(--sand-200)] text-[color:var(--ink-700)] transition-colors cursor-pointer" title="Close">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Drawer Content -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- Own admin badge session owner banner -->
+        @if (isSelf()) {
+          <div class="rounded-2xl border border-amber-300 bg-amber-50/70 p-4 text-xs text-amber-900 leading-relaxed flex gap-3 shadow-inner">
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-600 text-white shadow-sm shrink-0">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </span>
+            <div>
+              <span class="font-extrabold uppercase tracking-wider block mb-0.5">Active Admin Session</span>
+              This profile card represents your own current administrative account.
+            </div>
+          </div>
+        }
+
+        <!-- Core info group -->
+        <div class="space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Account Information</h3>
+          
+          <div class="grid grid-cols-2 gap-4 text-xs leading-relaxed">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">User ID</span>
+              <span class="text-sm font-semibold text-[color:var(--ink-900)]">#{{ selectedUser()?.id }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Email Verified</span>
+              <div class="flex items-center gap-1 mt-0.5">
+                @if (selectedUser()?.emailVerified) {
+                  <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-emerald-700 border border-emerald-200">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Verified
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-700 border border-amber-200">
+                    Pending
+                  </span>
+                }
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Email Address</span>
+              <span class="text-sm font-medium text-[color:var(--ink-900)] break-all">{{ selectedUser()?.email }}</span>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Account Status</span>
+              <div class="mt-0.5">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                  [class.bg-emerald-50]="selectedUser()?.status === 'ACTIVE'"
+                  [class.text-emerald-700]="selectedUser()?.status === 'ACTIVE'"
+                  [class.border-emerald-200]="selectedUser()?.status === 'ACTIVE'"
+                  [class.bg-rose-50]="selectedUser()?.status !== 'ACTIVE'"
+                  [class.text-rose-700]="selectedUser()?.status !== 'ACTIVE'"
+                  [class.border-rose-200]="selectedUser()?.status !== 'ACTIVE'"
+                  class="border">
+                  {{ selectedUser()?.status }}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Phone Number</span>
+              @if (selectedUser()?.phoneNumber) {
+                <span class="text-sm font-medium text-[color:var(--ink-900)]">{{ selectedUser()?.phoneNumber }}</span>
+              } @else {
+                <span class="text-xs text-[color:var(--ink-700)] italic">
+                  {{ isSelf() ? 'Not applicable (Admin)' : 'No phone registered' }}
+                </span>
+              }
+            </div>
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] block">Roles</span>
+              <div class="flex flex-wrap gap-1 mt-0.5">
+                @for (role of selectedUser()?.roles; track role) {
+                  @if (isSelf()) {
+                    <span class="inline-flex items-center gap-1 rounded-full bg-[color:var(--ink-900)] text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border border-amber-300 shadow-sm animate-pulse">
+                      👑 {{ role.replace('ROLE_', '') }}
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border"
+                      [class.bg-[color:var(--accent-50)]]="role.includes('ADMIN')"
+                      [class.text-[color:var(--accent-700)]]="role.includes('ADMIN')"
+                      [class.border-accent-200]="role.includes('ADMIN')"
+                      [class.bg-[color:var(--sand-100)]]="!role.includes('ADMIN')"
+                      [class.text-[color:var(--ink-700)]]="!role.includes('ADMIN')"
+                      [class.border-[color:var(--sand-300)]]="!role.includes('ADMIN')">
+                      {{ role.replace('ROLE_', '') }}
+                    </span>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Addresses list -->
+        <div class="space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Saved Addresses</h3>
+          
+          @if (isLoadingAddresses()) {
+            <div class="space-y-3">
+              <div class="h-16 animate-pulse rounded-xl bg-[color:var(--sand-100)]"></div>
+              <div class="h-16 animate-pulse rounded-xl bg-[color:var(--sand-100)]"></div>
+            </div>
+          } @else if (selectedUserAddresses().length === 0) {
+            <p class="text-xs text-[color:var(--ink-700)] italic py-2">No saved addresses on this account.</p>
+          } @else {
+            <div class="space-y-3 font-sans">
+              @for (addr of selectedUserAddresses(); track addr.id) {
+                <div class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-100)]/30 p-3.5 space-y-1.5 text-xs relative"
+                  [class.border-amber-300]="addr.isDefault"
+                  [class.bg-amber-50/10]="addr.isDefault">
+                  @if (addr.isDefault) {
+                    <span class="absolute top-3 right-3 inline-flex rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest text-amber-800">
+                      Default
+                    </span>
+                  }
+                  
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-[color:var(--ink-900)]">{{ addr.recipientName }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-[color:var(--sand-300)] text-[9px] uppercase tracking-widest font-bold text-[color:var(--ink-700)]">
+                      {{ addr.label }}
+                    </span>
+                  </div>
+
+                  <div class="text-[color:var(--ink-700)] leading-relaxed">
+                    <p>{{ addr.street }}</p>
+                    @if (addr.addressLine2) {
+                      <p>{{ addr.addressLine2 }}</p>
+                    }
+                    <p>{{ addr.city }}, {{ addr.state }} {{ addr.zipCode }}</p>
+                    <p class="font-semibold uppercase tracking-wider text-[10px] text-[color:var(--ink-900)]">{{ addr.country }}</p>
+                  </div>
+                  
+                  <div class="text-[9px] text-[color:var(--ink-700)] font-bold uppercase tracking-widest pt-1 flex items-center gap-1">
+                    <svg class="h-3.5 w-3.5 text-[color:var(--ink-500)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Use: {{ addr.type }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Drawer Footer -->
+      <div class="px-6 py-4 border-t border-[color:var(--sand-200)] bg-[color:var(--sand-50)] flex justify-end">
+        <button type="button" (click)="closeDetails()" class="rounded-full border border-[color:var(--sand-300)] bg-white px-5 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-200)] transition-colors cursor-pointer">
+          Done
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

@@ -1,0 +1,258 @@
+<section class="space-y-6">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Checkout</p>
+      <h2 class="mt-2 text-2xl font-semibold text-[color:var(--ink-900)]">Review and pay</h2>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)]">
+        Choose a shipping address, review your order, and continue to PayPal.
+      </p>
+    </div>
+    <button
+      type="button"
+      class="rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] disabled:cursor-not-allowed disabled:opacity-60"
+      (click)="loadCheckoutData()"
+      [disabled]="loading()"
+    >
+      Refresh
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--accent-600)]">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <app-loading-spinner label="Loading checkout"></app-loading-spinner>
+  } @else if (!cart() || cart()!.items.length === 0) {
+    <app-empty-state title="Your cart is empty" message="Add items to continue checkout."></app-empty-state>
+    <a
+      routerLink="/shop"
+      class="inline-flex rounded-full bg-[color:var(--ink-900)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[color:var(--ink-700)]"
+    >
+      Back to shop
+    </a>
+  } @else {
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div class="space-y-6">
+        <section class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-[0_18px_45px_-40px_rgba(32,24,16,0.6)]">
+          <h3 class="text-lg font-semibold text-[color:var(--ink-900)]">Shipping address</h3>
+
+          <div class="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-widest transition"
+              [class.border-[color:var(--accent-600)]]="addressMode() === 'saved'"
+              [class.text-[color:var(--accent-600)]]="addressMode() === 'saved'"
+              [class.border-[color:var(--sand-300)]]="addressMode() !== 'saved'"
+              [class.text-[color:var(--ink-700)]]="addressMode() !== 'saved'"
+              (click)="setMode('saved')"
+              [disabled]="!hasSavedAddresses()"
+            >
+              Saved address
+            </button>
+            <button
+              type="button"
+              class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-widest transition"
+              [class.border-[color:var(--accent-600)]]="addressMode() === 'new'"
+              [class.text-[color:var(--accent-600)]]="addressMode() === 'new'"
+              [class.border-[color:var(--sand-300)]]="addressMode() !== 'new'"
+              [class.text-[color:var(--ink-700)]]="addressMode() !== 'new'"
+              (click)="setMode('new')"
+            >
+              New address
+            </button>
+          </div>
+
+          @if (addressMode() === 'saved') {
+            @if (addresses().length === 0) {
+              <div class="mt-4 text-sm text-[color:var(--ink-700)]">No saved addresses yet.</div>
+            } @else {
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                @for (address of addresses(); track address.id) {
+                  <button
+                    type="button"
+                    class="rounded-2xl border p-4 text-left text-sm transition"
+                    [class.border-[color:var(--accent-600)]]="selectedAddressId() === address.id"
+                    [class.text-[color:var(--ink-900)]]="selectedAddressId() === address.id"
+                    [class.border-[color:var(--sand-300)]]="selectedAddressId() !== address.id"
+                    [class.text-[color:var(--ink-700)]]="selectedAddressId() !== address.id"
+                    (click)="selectAddress(address.id)"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs uppercase tracking-[0.2em]">{{ address.label }}</span>
+                      @if (address.isDefault) {
+                        <span class="rounded-full border border-[color:var(--sand-300)] px-2 py-1 text-[0.6rem] uppercase tracking-widest text-[color:var(--accent-600)]">
+                          Default
+                        </span>
+                      }
+                    </div>
+                    <p class="mt-2 font-semibold">{{ address.recipientName }}</p>
+                    <p class="mt-1">{{ address.street }}</p>
+                    @if (address.addressLine2) {
+                      <p class="mt-1">{{ address.addressLine2 }}</p>
+                    }
+                    <p class="mt-1">
+                      {{ address.city }}, {{ address.state }} {{ address.zipCode }}
+                    </p>
+                    <p class="mt-1">{{ address.country }}</p>
+                  </button>
+                }
+              </div>
+            }
+          } @else {
+            <form class="mt-4 grid gap-4" [formGroup]="newAddressForm" novalidate>
+              <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="fullName">
+                Full name
+                <input
+                  id="fullName"
+                  type="text"
+                  formControlName="fullName"
+                  class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                />
+              </label>
+
+              <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="street">
+                Street
+                <input
+                  id="street"
+                  type="text"
+                  formControlName="street"
+                  class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                />
+              </label>
+
+              <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="addressLine2">
+                Address line 2
+                <input
+                  id="addressLine2"
+                  type="text"
+                  formControlName="addressLine2"
+                  class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                />
+              </label>
+
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="city">
+                  City
+                  <input
+                    id="city"
+                    type="text"
+                    formControlName="city"
+                    class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                  />
+                </label>
+                <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="state">
+                  State
+                  <input
+                    id="state"
+                    type="text"
+                    formControlName="state"
+                    class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                  />
+                </label>
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="postalCode">
+                  Postal code
+                  <input
+                    id="postalCode"
+                    type="text"
+                    formControlName="postalCode"
+                    class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                  />
+                </label>
+                <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="country">
+                  Country (ISO-2)
+                  <input
+                    id="country"
+                    type="text"
+                    formControlName="country"
+                    class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm uppercase text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                  />
+                </label>
+              </div>
+
+              <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="deliveryNotes">
+                Delivery notes (optional)
+                <textarea
+                  id="deliveryNotes"
+                  rows="2"
+                  formControlName="deliveryNotes"
+                  class="mt-2 w-full resize-y rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                ></textarea>
+              </label>
+            </form>
+          }
+
+          @if (addressMode() === 'saved') {
+            <div class="mt-4" [formGroup]="newAddressForm">
+              <label class="block text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="savedNotes">
+                Delivery notes (optional)
+                <textarea
+                  id="savedNotes"
+                  rows="2"
+                  formControlName="deliveryNotes"
+                  class="mt-2 w-full resize-y rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+                ></textarea>
+              </label>
+            </div>
+          }
+        </section>
+
+        <section class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-[0_18px_45px_-40px_rgba(32,24,16,0.6)]">
+          <h3 class="text-lg font-semibold text-[color:var(--ink-900)]">Order items</h3>
+          <div class="mt-4 space-y-3">
+            @for (item of cart()!.items; track item.productId) {
+              <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
+                <div>
+                  <p class="font-semibold text-[color:var(--ink-900)]">{{ item.productName }}</p>
+                  <p class="text-[color:var(--ink-700)]">Qty {{ item.quantity }}</p>
+                </div>
+                <div class="text-right text-[color:var(--ink-900)]">
+                  ${{ item.totalPrice | number: '1.2-2' }}
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+
+      <aside class="h-fit rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-[0_20px_50px_-50px_rgba(32,24,16,0.6)]">
+        <h3 class="text-lg font-semibold text-[color:var(--ink-900)]">Order summary</h3>
+        <div class="mt-4 space-y-3 text-sm text-[color:var(--ink-700)]">
+          <div class="flex items-center justify-between">
+            <span>Items</span>
+            <span>{{ cart()!.itemCount }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Total quantity</span>
+            <span>{{ cart()!.totalItems }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Shipping</span>
+            <span class="text-[color:var(--leaf-500)] font-semibold">Free</span>
+          </div>
+          <div class="flex items-center justify-between text-base font-semibold text-[color:var(--ink-900)] pt-2 border-t border-dashed border-[color:var(--sand-300)]">
+            <span>Total</span>
+            <span>${{ cart()!.totalAmount | number: '1.2-2' }}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="mt-6 w-full rounded-full bg-[color:var(--ink-900)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[color:var(--ink-700)] disabled:cursor-not-allowed disabled:opacity-60"
+          (click)="placeOrder()"
+          [disabled]="submitting()"
+        >
+          {{ submitting() ? 'Submitting...' : 'Place order and pay' }}
+        </button>
+        <p class="mt-3 text-xs text-[color:var(--ink-700)]">
+          You will be redirected to PayPal to complete payment.
+        </p>
+      </aside>
+    </div>
+  }
+</section>

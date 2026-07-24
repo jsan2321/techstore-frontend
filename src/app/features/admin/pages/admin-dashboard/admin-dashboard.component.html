@@ -1,0 +1,179 @@
+<section class="space-y-8">
+  <!-- Header -->
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Overview</p>
+      <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)]">Dashboard</h1>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)]">High-level operations and KPIs at a glance.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+      (click)="loadKPIs()"
+      [disabled]="loading()"
+    >
+      Refresh
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--accent-600)]">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <app-loading-spinner label="Loading dashboard metrics"></app-loading-spinner>
+  } @else {
+    <!-- KPI Cards Row -->
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4 animate-fade-in">
+      <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-sm transition hover:shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--sand-100)] text-[color:var(--accent-500)] border border-[color:var(--sand-200)] shadow-inner">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </span>
+          <div>
+            <p class="text-2xl font-bold text-[color:var(--ink-900)]">{{ totalUsers() }}</p>
+            <p class="text-xs uppercase tracking-widest text-[color:var(--ink-700)]">Total Users</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-sm transition hover:shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--sand-100)] text-[color:var(--leaf-500)] border border-[color:var(--sand-200)] shadow-inner">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </span>
+          <div>
+            <p class="text-2xl font-bold text-[color:var(--ink-900)]">{{ totalProducts() }}</p>
+            <p class="text-xs uppercase tracking-widest text-[color:var(--ink-700)]">Products</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-sm transition hover:shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--sand-100)] text-[color:var(--accent-600)] border border-[color:var(--sand-200)] shadow-inner">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+          </span>
+          <div>
+            <p class="text-2xl font-bold text-[color:var(--ink-900)]">{{ totalOrders() }}</p>
+            <p class="text-xs uppercase tracking-widest text-[color:var(--ink-700)]">Orders</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-sm transition hover:shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--sand-100)] text-[color:var(--leaf-500)] border border-[color:var(--sand-200)] shadow-inner">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+          <div>
+            <p class="text-2xl font-bold text-[color:var(--ink-900)]">${{ totalRevenue() | number: '1.2-2' }}</p>
+            <p class="text-xs uppercase tracking-widest text-[color:var(--ink-700)]">Revenue</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent orders activity card -->
+    <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-6 shadow-[0_18px_45px_-40px_rgba(32,24,16,0.6)] space-y-4 animate-fade-in">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-[color:var(--ink-900)]">Recent Orders</h3>
+        <a
+          routerLink="/admin/orders"
+          class="text-xs font-semibold uppercase tracking-widest text-[color:var(--accent-600)] hover:underline"
+        >
+          View All Orders
+        </a>
+      </div>
+
+      @if (recentOrders().length === 0) {
+        <p class="text-sm text-[color:var(--ink-700)] italic py-4 text-center">No orders placed yet.</p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-[color:var(--sand-200)] text-[10px] uppercase tracking-widest text-[color:var(--ink-700)]">
+                <th class="py-3 font-semibold">Order ID</th>
+                <th class="py-3 font-semibold">Customer</th>
+                <th class="py-3 font-semibold">Date</th>
+                <th class="py-3 font-semibold">Amount</th>
+                <th class="py-3 font-semibold">Payment</th>
+                <th class="py-3 font-semibold">Status</th>
+                <th class="py-3 font-semibold text-right">Details</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[color:var(--sand-200)] text-sm text-[color:var(--ink-900)] font-sans">
+              @for (order of recentOrders(); track order.id) {
+                <tr class="hover:bg-[color:var(--sand-100)]/40 transition-colors">
+                  <td class="py-3 font-semibold">#{{ order.id }}</td>
+                  <td class="py-3">
+                    @if (order.user) {
+                      <div class="font-medium text-[color:var(--ink-900)]">
+                        {{ order.user.firstName }} {{ order.user.lastName }}
+                      </div>
+                      <div class="text-xs text-[color:var(--ink-700)]">{{ order.user.email }}</div>
+                    } @else {
+                      <span class="text-[color:var(--ink-700)] italic">Unknown Customer</span>
+                    }
+                  </td>
+                  <td class="py-3">{{ order.orderDate | date: 'mediumDate' }}</td>
+                  <td class="py-3 font-semibold">${{ order.totalAmount | number: '1.2-2' }}</td>
+                  <td class="py-3">
+                    <span 
+                      class="px-2 py-0.5 rounded-full text-[0.65rem] font-semibold uppercase tracking-wider border"
+                      [class.bg-emerald-50]="order.paymentStatus === 'CAPTURED'"
+                      [class.text-emerald-700]="order.paymentStatus === 'CAPTURED'"
+                      [class.border-emerald-200]="order.paymentStatus === 'CAPTURED'"
+                      [class.bg-amber-50]="order.paymentStatus === 'INITIATED'"
+                      [class.text-amber-700]="order.paymentStatus === 'INITIATED'"
+                      [class.border-amber-200]="order.paymentStatus === 'INITIATED'"
+                      [class.bg-rose-50]="order.paymentStatus === 'FAILED'"
+                      [class.text-rose-700]="order.paymentStatus === 'FAILED'"
+                      [class.border-rose-200]="order.paymentStatus === 'FAILED'"
+                    >
+                      {{ order.paymentStatus ?? 'N/A' }}
+                    </span>
+                  </td>
+                  <td class="py-3">
+                    <span 
+                      class="px-2 py-0.5 rounded-full text-[0.65rem] font-semibold uppercase tracking-wider border"
+                      [class.bg-emerald-50]="order.status === 'DELIVERED'"
+                      [class.text-emerald-700]="order.status === 'DELIVERED'"
+                      [class.border-emerald-200]="order.status === 'DELIVERED'"
+                      [class.bg-amber-50]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                      [class.text-amber-700]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                      [class.border-amber-200]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                      [class.bg-rose-50]="order.status === 'CANCELLED'"
+                      [class.text-rose-700]="order.status === 'CANCELLED'"
+                      [class.border-rose-200]="order.status === 'CANCELLED'"
+                    >
+                      {{ order.status }}
+                    </span>
+                  </td>
+                  <td class="py-3 text-right">
+                    <a
+                      [routerLink]="['/admin/orders']"
+                      class="inline-flex rounded-full border border-[color:var(--sand-300)] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] cursor-pointer"
+                    >
+                      Manage
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</section>

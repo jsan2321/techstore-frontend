@@ -1,0 +1,125 @@
+<section class="grid min-h-[70vh] place-items-center px-4 py-10">
+  <div
+    class="w-full max-w-2xl rounded-[2rem] border border-[color:var(--sand-300)] bg-white/85 p-6 shadow-[0_28px_60px_-48px_rgba(32,24,16,0.6)]"
+  >
+    <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Create Account</p>
+    <h2 class="mt-2 text-2xl font-semibold text-[color:var(--ink-900)]">Register</h2>
+    <p class="mt-2 text-sm text-[color:var(--ink-700)]">Start shopping and track every order.</p>
+
+    @if (errorMessage()) {
+      <div
+        class="mt-4 rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--accent-600)]"
+      >
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form class="mt-6 grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="firstName">
+          First name
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            autocomplete="given-name"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none"
+            [class.input-error]="form.controls.firstName.touched && form.controls.firstName.invalid"
+          />
+        </label>
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="lastName">
+          Last name
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            autocomplete="family-name"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none"
+            [class.input-error]="form.controls.lastName.touched && form.controls.lastName.invalid"
+          />
+        </label>
+      </div>
+      @if (form.controls.firstName.touched && form.controls.firstName.invalid) {
+        <small class="error-text animate-shake text-xs">First name is required and must be up to 50 chars.</small>
+      }
+      @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+        <small class="error-text animate-shake text-xs">Last name is required and must be up to 50 chars.</small>
+      }
+
+      <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="email">
+        Email
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none"
+          [class.input-error]="form.controls.email.touched && form.controls.email.invalid"
+        />
+      </label>
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <small class="error-text animate-shake text-xs">Enter a valid email address.</small>
+      }
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="password">
+          Password
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none"
+            [class.input-error]="form.controls.password.touched && form.controls.password.invalid"
+          />
+        </label>
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="confirmPassword">
+          Confirm password
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none"
+            [class.input-error]="form.controls.confirmPassword.touched && form.controls.confirmPassword.invalid"
+          />
+        </label>
+      </div>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <small class="error-text animate-shake text-xs">Password must be at least 6 characters.</small>
+      }
+      @if (form.controls.confirmPassword.touched && form.controls.confirmPassword.invalid) {
+        <small class="error-text animate-shake text-xs">Please confirm your password.</small>
+      }
+      @if (form.errors?.['passwordMismatch'] && form.controls.confirmPassword.touched) {
+        <small class="error-text animate-shake text-xs">Passwords do not match.</small>
+      }
+
+      <button
+        type="submit"
+        class="mt-2 w-full rounded-full bg-[color:var(--ink-900)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[color:var(--ink-700)] disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="isSubmitting()"
+      >
+        {{ isSubmitting() ? 'Creating account...' : 'Create account' }}
+      </button>
+    </form>
+
+    <div class="my-6 flex items-center gap-3 text-xs uppercase tracking-[0.35em] text-[color:var(--ink-700)]">
+      <span class="h-px flex-1 bg-[color:var(--sand-300)]"></span>
+      or
+      <span class="h-px flex-1 bg-[color:var(--sand-300)]"></span>
+    </div>
+
+    <section class="grid justify-items-center gap-3" aria-label="Google Sign-In">
+      <div #googleButtonHost class="min-h-[40px] w-full max-w-[20rem]"></div>
+      @if (googleInfoMessage()) {
+        <small class="text-xs text-[color:var(--ink-700)]">{{ googleInfoMessage() }}</small>
+      }
+    </section>
+
+    <p class="mt-5 text-sm text-[color:var(--ink-700)]">
+      Already have an account?
+      <a class="font-semibold text-[color:var(--accent-600)]" routerLink="/auth/login">Sign in</a>
+    </p>
+  </div>
+</section>

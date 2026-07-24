@@ -1,59 +1,89 @@
-# ShoppingCartFrontend
+# TechStore Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+TechStore Frontend is the Angular web client for the TechStore e-commerce application. It connects to the separate TechStore Backend API for catalog data, accounts, carts, checkout, orders, and administration.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- Product catalog browsing, search, filters, brands, and categories.
+- Customer registration, login, Google Sign-In, email confirmation, and password recovery.
+- Persisted shopping cart, saved addresses, checkout, and PayPal Sandbox payment flow.
+- Customer order history and profile management.
+- Administrative product, catalog, user, and order-management views.
 
-```bash
-ng serve
-```
+## Technology
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Angular 21 with standalone components, signals, and Angular Router
+- TypeScript 5.9, RxJS, Tailwind CSS 4, and PostCSS
+- Angular build system and Vitest unit-test runner
+- Nginx-based Docker image for static hosting
 
-## Code scaffolding
+## Prerequisites
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Node.js compatible with the project dependencies
+- npm 11 (the project records `npm@11.6.2`)
+- A running TechStore Backend API, normally at `http://localhost:8081`
 
-```bash
-ng generate component component-name
-```
+## Install and run
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Install dependencies:
 
 ```bash
-ng build
+npm ci
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Start the local development server:
 
 ```bash
-ng test
+npm start
 ```
 
-## Running end-to-end tests
+Open `http://localhost:4200/` in a browser. The default API base URL is defined in `src/app/core/config/api.config.ts` and currently targets `http://localhost:8081/api/v1`.
 
-For end-to-end (e2e) testing, run:
+## Google Sign-In
+
+The Google Identity Services client reads a browser OAuth client ID from this meta tag in `src/index.html`:
+
+```html
+<meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+```
+
+A browser OAuth client ID is intentionally public. It is not a client secret and cannot provide access to a Google account. Configure the allowed JavaScript origins for this client in Google Cloud Console, and keep any client secret exclusively on the backend.
+
+## Build and test
+
+Create an optimized build:
 
 ```bash
-ng e2e
+npm run build
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Run unit tests:
 
-## Additional Resources
+```bash
+npm test
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Build a container image:
+
+```bash
+docker build -t techstore-frontend .
+```
+
+The Dockerfile builds the Angular application and serves the generated static files with Nginx on port `80`.
+
+## Project structure
+
+- `src/app/core`: application configuration, API services, authentication, and HTTP interceptors.
+- `src/app/features`: catalog, authentication, profile, checkout, cart, and administration features.
+- `src/app/shared`: reusable components and utilities.
+- `src/app/data`: application data and supporting models.
+
+## Backend dependency
+
+This client requires the separate `techstore-backend` service. Configure the backend's CORS allowlist and the frontend API base URL together when using a different origin or port.
+
+## Repository hygiene
+
+- Do not place passwords, API secrets, JWT secrets, PayPal secrets, or cloud credentials in frontend source files.
+- The frontend must only contain public configuration such as its API URL and Google browser client ID.
+- `node_modules`, generated build output, test coverage, and Angular cache files are ignored by Git.

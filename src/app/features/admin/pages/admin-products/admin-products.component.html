@@ -1,0 +1,348 @@
+<section class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Catalog</p>
+      <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)]">Products</h1>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)]">Create, update, manage visibility and catalog listings.</p>
+    </div>
+    <button type="button" (click)="openAdd()"
+      class="inline-flex items-center gap-2 rounded-full bg-[color:var(--ink-900)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm transition hover:bg-[color:var(--ink-700)] active:scale-95">
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Add Product
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-3">
+    <!-- Search Bar -->
+    <div class="relative flex-1 min-w-[200px]">
+      <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-700)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input id="products-search" type="text" placeholder="Search by name..."
+        [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+        (keyup.enter)="applyFilter()"
+        class="w-full rounded-xl border border-[color:var(--sand-300)] bg-white/80 py-2.5 pl-10 pr-4 text-sm text-[color:var(--ink-900)] shadow-sm focus:outline-none focus:border-[color:var(--accent-600)]" />
+    </div>
+
+    <!-- Grouped Filters Dropdown -->
+    <div class="relative">
+      <button type="button" (click)="toggleFilterDropdown()"
+        class="flex items-center gap-2 rounded-xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-2.5 text-sm text-[color:var(--ink-900)] shadow-sm hover:bg-[color:var(--sand-100)] hover:border-[color:var(--accent-600)] transition-all cursor-pointer">
+        <svg class="h-4 w-4 text-[color:var(--ink-700)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
+        </svg>
+        <span>Filters</span>
+        @if (activeFilterCount() > 0) {
+          <span class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--accent-600)] text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+            {{ activeFilterCount() }}
+          </span>
+        }
+        <svg class="h-4 w-4 text-[color:var(--ink-500)] transition-transform duration-200" [class.rotate-180]="filterDropdownOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <!-- Dropdown Popover panel -->
+      @if (filterDropdownOpen()) {
+        <div class="absolute left-0 mt-2 z-40 w-72 rounded-2xl border border-[color:var(--sand-200)] bg-white p-4 shadow-xl space-y-4" (click)="$event.stopPropagation()">
+          
+          <!-- Visibility Group -->
+          <div class="space-y-2">
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Visibility Status</h4>
+            <div class="space-y-1.5 font-sans text-xs">
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="activeFilter" [checked]="activeFilter() === ''" (change)="activeFilter.set(''); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>All Visibility</span>
+              </label>
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="activeFilter" [checked]="activeFilter() === 'true'" (change)="activeFilter.set('true'); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>Active Only</span>
+              </label>
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="activeFilter" [checked]="activeFilter() === 'false'" (change)="activeFilter.set('false'); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>Inactive Only</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Stock Availability Group -->
+          <div class="space-y-2">
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Stock Availability</h4>
+            <div class="space-y-1.5 font-sans text-xs">
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="stockFilter" [checked]="stockFilter() === ''" (change)="stockFilter.set(''); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>All Stock Levels</span>
+              </label>
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="stockFilter" [checked]="stockFilter() === 'in_stock'" (change)="stockFilter.set('in_stock'); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>In Stock</span>
+              </label>
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="stockFilter" [checked]="stockFilter() === 'out_of_stock'" (change)="stockFilter.set('out_of_stock'); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span class="text-red-600 font-medium">Out of Stock</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Offers Group -->
+          <div class="space-y-2">
+            <h4 class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] border-b border-[color:var(--sand-100)] pb-1">Offers & Pricing</h4>
+            <div class="space-y-1.5 font-sans text-xs">
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="discountFilter" [checked]="discountFilter() === ''" (change)="discountFilter.set(''); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>All Prices</span>
+              </label>
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="discountFilter" [checked]="discountFilter() === 'discounted'" (change)="discountFilter.set('discounted'); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>On Discount</span>
+              </label>
+              <label class="flex items-center gap-2 text-[color:var(--ink-900)] cursor-pointer">
+                <input type="radio" name="discountFilter" [checked]="discountFilter() === 'regular'" (change)="discountFilter.set('regular'); applyFilter()" class="h-4 w-4 accent-[color:var(--accent-600)]" />
+                <span>Regular Price</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Action Row -->
+          <div class="flex items-center justify-between pt-2 border-t border-[color:var(--sand-100)]">
+            <button type="button" (click)="resetFilters()" class="text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] hover:text-[color:var(--accent-600)]">Reset</button>
+            <button type="button" (click)="filterDropdownOpen.set(false)" class="rounded-lg bg-[color:var(--ink-900)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-[color:var(--ink-700)]">Apply</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <button type="button" (click)="applyFilter()"
+      class="rounded-xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-900)] shadow-sm hover:bg-[color:var(--sand-100)] transition-colors">
+      Search
+    </button>
+  </div>
+
+  <!-- Error -->
+  @if (errorMsg()) {
+    <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ errorMsg() }}</div>
+  }
+
+  <!-- Loading skeleton -->
+  @if (isLoading()) {
+    <div class="space-y-3">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="h-14 animate-pulse rounded-2xl bg-[color:var(--sand-100)]"></div>
+      }
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!isLoading() && displayedProducts().length > 0) {
+    <div class="overflow-x-auto rounded-2xl border border-[color:var(--sand-200)] bg-white/85 shadow-sm">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-[color:var(--sand-200)] bg-[color:var(--sand-50)]">
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Name</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Category</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Price</th>
+            <th class="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Stock</th>
+            <th class="px-5 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)]">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[color:var(--sand-100)]">
+          @for (product of displayedProducts(); track product.id) {
+            <tr class="transition-colors hover:bg-[color:var(--sand-50)]">
+              <td class="px-5 py-3.5 font-medium text-[color:var(--ink-900)]">{{ product.name }}</td>
+              <td class="px-5 py-3.5 text-[color:var(--ink-700)]">{{ product.category }}</td>
+              <td class="px-5 py-3.5">
+                <div class="flex items-center gap-1.5">
+                  @if (product.discount) {
+                    <span class="text-[color:var(--ink-900)] font-semibold">${{ product.effectivePrice | number:'1.2-2' }}</span>
+                    <span class="text-[10px] text-[color:var(--ink-700)] line-through">${{ product.originalPrice | number:'1.2-2' }}</span>
+                    <span class="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700">-{{ product.discount.percentage }}%</span>
+                  } @else {
+                    <span class="text-[color:var(--ink-900)] font-semibold">${{ product.originalPrice | number:'1.2-2' }}</span>
+                  }
+                </div>
+              </td>
+              <td class="px-5 py-3.5">
+                <span [class.text-red-600]="product.stock === 0" [class.font-bold]="product.stock === 0">{{ product.stock }}</span>
+              </td>
+              <td class="px-5 py-3.5">
+                <div class="flex justify-end gap-2">
+                  @if (confirmDeleteId() === product.id) {
+                    <span class="text-xs text-[color:var(--ink-700)] self-center">Delete?</span>
+                    <button type="button" (click)="executeDelete(product.id)" [disabled]="isDeleting()"
+                      class="rounded-lg bg-red-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-red-600 disabled:opacity-50">Yes</button>
+                    <button type="button" (click)="cancelDelete()"
+                      class="rounded-lg border border-[color:var(--sand-300)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-100)]">No</button>
+                  } @else {
+                    <button type="button" (click)="openEdit(product)"
+                      class="rounded-lg border border-[color:var(--sand-300)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-100)] transition-colors">Edit</button>
+                    <button type="button" (click)="confirmDelete(product.id)"
+                      class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-red-600 hover:bg-red-100 transition-colors">Delete</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs text-[color:var(--ink-700)]">
+      Showing {{ displayedProducts().length }} of {{ pagedResult()!.totalElements }} product(s)
+    </p>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading() && !errorMsg() && displayedProducts().length === 0) {
+    <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[color:var(--sand-300)] bg-white/50 px-6 py-16 text-center">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--sand-100)] text-[color:var(--accent-500)]">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      <h3 class="mt-4 text-lg font-semibold text-[color:var(--ink-900)]">No products found</h3>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)]">Add your first product or adjust your search filters.</p>
+    </div>
+  }
+
+</section>
+
+<!-- ── Product Modal ─────────────────────────────────────────────────────────── -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeModal()">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-[color:var(--ink-900)]/50 backdrop-blur-sm"></div>
+
+    <!-- Panel -->
+    <div class="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-[color:var(--sand-200)] bg-white shadow-2xl" (click)="$event.stopPropagation()">
+      <div class="px-7 py-6 border-b border-[color:var(--sand-200)]">
+        <h2 class="text-lg font-semibold text-[color:var(--ink-900)]">
+          {{ editingProduct() ? 'Edit Product' : 'New Product' }}
+        </h2>
+      </div>
+
+      <div class="px-7 py-6 grid gap-4">
+        <!-- Form error -->
+        @if (formError()) {
+          <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{{ formError() }}</div>
+        }
+
+        <!-- Name -->
+        <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-name">
+          Name *
+          <input id="p-name" type="text" placeholder="Product name" [ngModel]="fName()" (ngModelChange)="fName.set($event)"
+            class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-4 py-2.5 text-sm text-[color:var(--ink-900)] font-normal focus:outline-none focus:border-[color:var(--accent-600)]" />
+        </label>
+
+        <!-- Brand & Category row -->
+        <div class="grid grid-cols-2 gap-4">
+          <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-brand">
+            Brand *
+            <select id="p-brand" [ngModel]="fBrandId()" (ngModelChange)="fBrandId.set(+$event)"
+              class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-3 py-2.5 text-sm text-[color:var(--ink-900)] font-normal focus:outline-none focus:border-[color:var(--accent-600)]">
+              <option [ngValue]="null">Select brand</option>
+              @for (brand of brands(); track brand.id) {
+                <option [value]="brand.id">{{ brand.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-category">
+            Category *
+            <select id="p-category" [ngModel]="fCategoryId()" (ngModelChange)="fCategoryId.set(+$event)"
+              class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-3 py-2.5 text-sm text-[color:var(--ink-900)] font-normal focus:outline-none focus:border-[color:var(--accent-600)]">
+              <option [ngValue]="null">Select category</option>
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.name }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <!-- Price & Stock row -->
+        <div class="grid grid-cols-2 gap-4">
+          <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-price">
+            Price ($) *
+            <input id="p-price" type="number" min="0.01" step="0.01" placeholder="0.00" [ngModel]="fPrice()" (ngModelChange)="fPrice.set($event)"
+              class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-4 py-2.5 text-sm text-[color:var(--ink-900)] font-normal focus:outline-none focus:border-[color:var(--accent-600)]" />
+          </label>
+          <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-stock">
+            Stock *
+            <input id="p-stock" type="number" min="0" placeholder="0" [ngModel]="fStock()" (ngModelChange)="fStock.set($event)"
+              class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-4 py-2.5 text-sm text-[color:var(--ink-900)] font-normal focus:outline-none focus:border-[color:var(--accent-600)]" />
+          </label>
+        </div>
+
+        <!-- Description -->
+        <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-desc">
+          Description
+          <textarea id="p-desc" rows="3" placeholder="Product description..." [ngModel]="fDescription()" (ngModelChange)="fDescription.set($event)"
+            class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-4 py-2.5 text-sm text-[color:var(--ink-900)] font-normal resize-none focus:outline-none focus:border-[color:var(--accent-600)]"></textarea>
+        </label>
+
+        <!-- Image Upload -->
+        <div class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]">
+          <span>Product Image</span>
+          <div class="flex items-center gap-4 mt-2">
+            <!-- Preview Box -->
+            <div class="h-16 w-16 rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] overflow-hidden flex items-center justify-center shrink-0">
+              @if (imagePreviewUrl()) {
+                <img [src]="imagePreviewUrl()" class="h-full w-full object-cover" />
+              } @else {
+                <svg class="h-6 w-6 text-[color:var(--sand-400)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              }
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-wrap gap-2">
+              <label class="inline-flex items-center justify-center rounded-xl border border-[color:var(--sand-300)] bg-white px-3.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-100)] transition-colors cursor-pointer">
+                <span>Browse Image</span>
+                <input type="file" accept="image/*" class="hidden" (change)="onImageSelected($event)" />
+              </label>
+              @if (imagePreviewUrl() || selectedImageFile()) {
+                <button type="button" (click)="removeImage()" class="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-[10px] font-bold uppercase tracking-widest text-red-600 hover:bg-red-100 transition-colors cursor-pointer">
+                  Remove Image
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Discount toggle -->
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" [ngModel]="fApplyDiscount()" (ngModelChange)="fApplyDiscount.set($event)"
+            class="h-4 w-4 rounded accent-[color:var(--accent-600)]" />
+          <span class="text-sm text-[color:var(--ink-900)]">Apply discount</span>
+        </label>
+        @if (fApplyDiscount()) {
+          <label class="grid gap-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="p-discount">
+            Discount %
+            <input id="p-discount" type="number" min="1" max="99" placeholder="e.g. 15" [ngModel]="fDiscountPct()" (ngModelChange)="fDiscountPct.set($event)"
+              class="rounded-xl border border-[color:var(--sand-300)] bg-[color:var(--sand-50)] px-4 py-2.5 text-sm text-[color:var(--ink-900)] font-normal focus:outline-none focus:border-[color:var(--accent-600)]" />
+          </label>
+        }
+
+        <!-- Featured toggle -->
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" [ngModel]="fFeatured()" (ngModelChange)="fFeatured.set($event)"
+            class="h-4 w-4 rounded accent-[color:var(--accent-600)]" />
+          <span class="text-sm text-[color:var(--ink-900)]">Featured product</span>
+        </label>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end gap-3 px-7 pb-6">
+        <button type="button" (click)="closeModal()"
+          class="rounded-full border border-[color:var(--sand-300)] px-5 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] hover:bg-[color:var(--sand-100)] transition-colors">Cancel</button>
+        <button type="button" (click)="saveProduct()" [disabled]="isSaving()"
+          class="rounded-full bg-[color:var(--ink-900)] px-5 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-[color:var(--ink-700)] disabled:opacity-60 transition-colors">
+          {{ isSaving() ? 'Saving...' : editingProduct() ? 'Update' : 'Create' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

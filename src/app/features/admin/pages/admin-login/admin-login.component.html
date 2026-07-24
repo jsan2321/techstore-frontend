@@ -1,0 +1,89 @@
+<div class="min-h-screen flex items-center justify-center px-4 py-12 relative bg-radial from-[#fff8ef] via-[#f5ead7] to-[#efe1cc]">
+  <!-- Subtle grid pattern overlay -->
+  <div class="absolute inset-0 opacity-15 pointer-events-none"
+       style="background-image: linear-gradient(var(--sand-300) 1px, transparent 1px), linear-gradient(90deg, var(--sand-300) 1px, transparent 1px); background-size: 40px 40px;">
+  </div>
+
+  <div class="relative w-full max-w-md">
+    <!-- Lock icon badge -->
+    <div class="flex justify-center mb-6">
+      <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[color:var(--ink-900)] shadow-[0_8px_32px_-4px_rgba(32,24,16,0.3)] border border-[color:var(--sand-300)]">
+        <svg class="h-8 w-8 text-[color:var(--sand-100)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card with top accent border -->
+    <div class="rounded-[2rem] border-t-4 border-t-[color:var(--accent-600)] border-x border-b border-[color:var(--sand-300)] bg-white/85 p-8 shadow-[0_32px_80px_-16px_rgba(32,24,16,0.2)] backdrop-blur-md">
+      <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)] text-center font-bold">Administration</p>
+      <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)] text-center font-display">Admin Access</h1>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)] text-center leading-relaxed">This area is restricted to authorized administrators.</p>
+
+      @if (errorMessage()) {
+        <div class="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 animate-fade-in">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <!-- Security Advisory Notice -->
+      <div class="mt-6 rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-100)]/60 p-4 text-xs text-[color:var(--ink-700)] leading-relaxed flex gap-3">
+        <svg class="h-5 w-5 text-[color:var(--accent-600)] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+          <span class="font-bold block mb-1">SECURITY WARNING</span>
+          Authorized administrator credentials required. Unauthorized access attempts are monitored and recorded.
+        </div>
+      </div>
+
+      <form class="mt-6 grid gap-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <!-- Email -->
+        <label class="block text-xs font-bold uppercase tracking-widest text-[color:var(--ink-700)]" for="admin-email">
+          Email Address
+          <input
+            id="admin-email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="admin@example.com"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white/70 px-4 py-3 text-sm text-[color:var(--ink-900)] placeholder-gray-400 shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none focus:bg-white"
+            [class.border-red-400]="form.controls.email.touched && form.controls.email.invalid"
+          />
+        </label>
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <small class="text-red-600 animate-shake text-xs -mt-3">Enter a valid email address.</small>
+        }
+
+        <!-- Password -->
+        <label class="block text-xs font-bold uppercase tracking-widest text-[color:var(--ink-700)]" for="admin-password">
+          Security Password
+          <input
+            id="admin-password"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="••••••••"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white/70 px-4 py-3 text-sm text-[color:var(--ink-900)] placeholder-gray-400 shadow-sm transition-colors focus:border-[color:var(--accent-600)] focus:outline-none focus:bg-white"
+            [class.border-red-400]="form.controls.password.touched && form.controls.password.invalid"
+          />
+        </label>
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <small class="text-red-600 animate-shake text-xs -mt-3">Password is required.</small>
+        }
+
+        <button
+          type="submit"
+          class="mt-2 w-full rounded-full bg-[color:var(--ink-900)] px-4 py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-white shadow-[0_4px_20px_-4px_rgba(32,24,16,0.3)] transition hover:bg-[color:var(--ink-700)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+          [disabled]="isSubmitting()"
+        >
+          {{ isSubmitting() ? 'Verifying Credentials...' : 'Sign in to Secure Console' }}
+        </button>
+      </form>
+    </div>
+
+    <p class="mt-6 text-center text-xs text-[color:var(--ink-700)]">
+      Not an admin? <a routerLink="/auth/login" class="text-[color:var(--accent-600)] hover:underline font-semibold transition-colors">Go to public login</a>
+    </p>
+  </div>
+</div>

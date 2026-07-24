@@ -8,5 +8,5 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('shopping-cart-frontend');
+  protected readonly title = signal('techstore-frontend');
 }

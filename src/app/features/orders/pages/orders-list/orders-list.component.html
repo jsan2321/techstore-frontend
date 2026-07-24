@@ -1,0 +1,203 @@
+<section class="space-y-6">
+  <header class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">My Orders</p>
+      <h2 class="mt-2 text-2xl font-semibold text-[color:var(--ink-900)]">Order history</h2>
+      <p class="mt-2 text-sm text-[color:var(--ink-700)] font-sans">Track recent purchases and payment status.</p>
+    </div>
+    <button
+      type="button"
+      class="rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+      (click)="loadOrders()"
+      [disabled]="loading()"
+    >
+      Refresh
+    </button>
+  </header>
+
+  @if (infoMessage()) {
+    <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--leaf-500)] animate-fade-in">
+      {{ infoMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--accent-600)] animate-fade-in">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <app-loading-spinner label="Loading orders"></app-loading-spinner>
+  } @else if (orders().length === 0) {
+    <app-empty-state title="No orders yet" message="Place your first order to see it here."></app-empty-state>
+    <a
+      routerLink="/shop"
+      class="inline-flex rounded-full bg-[color:var(--ink-900)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[color:var(--ink-700)]"
+    >
+      Start shopping
+    </a>
+  } @else {
+    <!-- Status Filter pills -->
+    <div class="flex flex-wrap gap-2 pt-2 border-b border-[color:var(--sand-200)] pb-4">
+      @for (filter of ['ALL', 'PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']; track filter) {
+        <button
+          type="button"
+          (click)="activeFilter.set($any(filter))"
+          class="rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition shadow-sm border active:scale-95 cursor-pointer focus:outline-none"
+          [class.bg-[color:var(--ink-900)]]="activeFilter() === filter"
+          [class.text-white]="activeFilter() === filter"
+          [class.border-transparent]="activeFilter() === filter"
+          [class.bg-white]="activeFilter() !== filter"
+          [class.text-[color:var(--ink-700)]]="activeFilter() !== filter"
+          [class.border-[color:var(--sand-300)]]="activeFilter() !== filter"
+          [class.hover:border-[color:var(--accent-600)]]="activeFilter() !== filter"
+          [class.hover:text-[color:var(--accent-600)]]="activeFilter() !== filter"
+        >
+          {{ filter }}
+        </button>
+      }
+    </div>
+
+    @if (filteredOrders().length === 0) {
+      <div class="rounded-2xl border border-[color:var(--sand-300)] bg-white/70 px-5 py-8 text-center text-sm text-[color:var(--ink-700)] font-sans">
+        No orders found matching the <span class="font-semibold text-[color:var(--accent-600)]">"{{ activeFilter() }}"</span> status filter.
+      </div>
+    } @else {
+      <section class="space-y-4 animate-fade-in">
+        @for (order of filteredOrders(); track order.id) {
+          <article class="rounded-2xl border border-[color:var(--sand-300)] bg-white/85 p-5 shadow-[0_18px_45px_-40px_rgba(32,24,16,0.6)]">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div class="space-y-1">
+                <span class="text-xs uppercase tracking-widest text-[color:var(--ink-700)] font-semibold">Order Reference</span>
+                <h3 class="text-lg font-bold text-[color:var(--ink-900)]">#{{ order.id }}</h3>
+                <p class="text-sm text-[color:var(--ink-700)] font-sans">
+                  Placed {{ order.orderDate | date: 'mediumDate' }}
+                </p>
+              </div>
+
+              <!-- Metrics -->
+              <div class="space-y-1 sm:text-right font-sans">
+                <span class="text-xs uppercase tracking-widest text-[color:var(--ink-700)]">Totals</span>
+                <p class="text-base font-bold text-[color:var(--ink-900)]">
+                  ${{ order.totalAmount | number: '1.2-2' }}
+                </p>
+                <p class="text-xs text-[color:var(--ink-700)] font-medium">
+                  {{ order.totalItems }} {{ order.totalItems === 1 ? 'item' : 'items' }}
+                </p>
+              </div>
+
+              <!-- Status highlighting Badges -->
+              <div class="flex flex-col gap-2 items-end">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-[color:var(--ink-700)]">Status:</span>
+                  <span 
+                    class="px-2.5 py-0.5 rounded-full text-[0.65rem] font-semibold uppercase tracking-wider border transition-colors"
+                    [class.bg-emerald-50]="order.status === 'DELIVERED'"
+                    [class.text-emerald-700]="order.status === 'DELIVERED'"
+                    [class.border-emerald-200]="order.status === 'DELIVERED'"
+                    [class.bg-amber-50]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                    [class.text-amber-700]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                    [class.border-amber-200]="order.status === 'PENDING' || order.status === 'PROCESSING' || order.status === 'SHIPPED'"
+                    [class.bg-rose-50]="order.status === 'CANCELLED'"
+                    [class.text-rose-700]="order.status === 'CANCELLED'"
+                    [class.border-rose-200]="order.status === 'CANCELLED'"
+                  >
+                    {{ order.status }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-xs text-[color:var(--ink-700)]">Payment:</span>
+                  <span 
+                    class="px-2.5 py-0.5 rounded-full text-[0.65rem] font-semibold uppercase tracking-wider border transition-colors"
+                    [class.bg-emerald-50]="order.paymentStatus === 'CAPTURED'"
+                    [class.text-emerald-700]="order.paymentStatus === 'CAPTURED'"
+                    [class.border-emerald-200]="order.paymentStatus === 'CAPTURED'"
+                    [class.bg-amber-50]="order.paymentStatus === 'INITIATED'"
+                    [class.text-amber-700]="order.paymentStatus === 'INITIATED'"
+                    [class.border-amber-200]="order.paymentStatus === 'INITIATED'"
+                    [class.bg-rose-50]="order.paymentStatus === 'FAILED'"
+                    [class.text-rose-700]="order.paymentStatus === 'FAILED'"
+                    [class.border-rose-200]="order.paymentStatus === 'FAILED'"
+                  >
+                    {{ order.paymentStatus ?? 'N/A' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions block -->
+            <div class="mt-5 pt-4 border-t border-[color:var(--sand-200)] flex flex-wrap gap-3">
+              <a
+                [routerLink]="['/orders', order.id]"
+                class="rounded-full border border-[color:var(--sand-300)] bg-white px-5 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)]"
+              >
+                View details
+              </a>
+              @if (canCancel(order.status)) {
+                <button
+                  type="button"
+                  class="rounded-full border border-red-200/50 bg-rose-50 px-5 py-2 text-xs font-semibold uppercase tracking-widest text-rose-700 transition hover:bg-rose-100 hover:border-red-300 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer shadow-sm active:scale-95"
+                  (click)="cancelOrder(order)"
+                  [disabled]="cancellingOrderId() === order.id"
+                >
+                  {{ cancellingOrderId() === order.id ? 'Cancelling...' : 'Cancel order' }}
+                </button>
+              }
+            </div>
+          </article>
+        }
+      </section>
+    }
+  }
+
+  <!-- Cancellation Modal Overlay -->
+  @if (isCancelModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-black/40 animate-fade-in">
+      <div class="w-full max-w-md rounded-2xl border border-[color:var(--sand-300)] bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.15)] space-y-6">
+        <div class="flex items-center gap-3">
+          <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--error-100)] text-[color:var(--error-500)]">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-[color:var(--ink-900)]">Cancel Order</h3>
+            <p class="text-xs text-[color:var(--ink-700)] mt-0.5 font-sans">Are you sure you want to cancel order #{{ selectedOrderToCancel()?.id }}?</p>
+          </div>
+        </div>
+
+        <div class="space-y-2 font-sans">
+          <label for="cancellationReason" class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]">
+            Reason for cancellation (optional)
+          </label>
+          <textarea
+            id="cancellationReason"
+            #reasonInput
+            rows="3"
+            placeholder="e.g. Changed my mind, found a better price..."
+            (input)="cancellationReason.set(reasonInput.value)"
+            class="w-full resize-none rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none placeholder:text-gray-400"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            (click)="closeCancelModal()"
+            class="rounded-full border border-[color:var(--sand-300)] bg-white px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] cursor-pointer"
+          >
+            No, Keep Order
+          </button>
+          <button
+            type="button"
+            (click)="confirmCancelOrder()"
+            class="rounded-full bg-[color:var(--error-500)] px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-red-700 shadow-sm cursor-pointer"
+          >
+            Yes, Cancel Order
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

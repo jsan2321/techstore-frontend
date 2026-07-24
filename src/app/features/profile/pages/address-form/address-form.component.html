@@ -1,0 +1,162 @@
+<section class="space-y-6">
+  <a
+    routerLink="/profile/addresses"
+    class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--accent-600)] hover:underline"
+  >
+    &larr; Back to addresses
+  </a>
+
+  <header>
+    <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">My Account</p>
+    <h2 class="mt-2 text-2xl font-semibold text-[color:var(--ink-900)]">
+      {{ isEditMode() ? 'Edit Address' : 'New Address' }}
+    </h2>
+    <p class="mt-2 text-sm text-[color:var(--ink-700)]">
+      {{ isEditMode() ? 'Update your saved address details.' : 'Create a new saved address.' }}
+    </p>
+  </header>
+
+  @if (errorMessage()) {
+    <div
+      class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--accent-600)]"
+    >
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <section class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-5 text-sm text-[color:var(--ink-700)]">
+      Loading address...
+    </section>
+  } @else {
+    <section class="rounded-2xl border border-[color:var(--sand-300)] bg-white/80 p-5 shadow-[0_20px_50px_-50px_rgba(32,24,16,0.6)]">
+      <form class="grid gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="label">
+          Label
+          <input
+            id="label"
+            type="text"
+            formControlName="label"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+          />
+        </label>
+
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="recipientName">
+          Recipient name
+          <input
+            id="recipientName"
+            type="text"
+            formControlName="recipientName"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+          />
+        </label>
+
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="street">
+          Street
+          <input
+            id="street"
+            type="text"
+            formControlName="street"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+          />
+        </label>
+
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="addressLine2">
+          Address line 2
+          <input
+            id="addressLine2"
+            type="text"
+            formControlName="addressLine2"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+          />
+        </label>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="city">
+            City
+            <input
+              id="city"
+              type="text"
+              formControlName="city"
+              class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+            />
+          </label>
+          <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="state">
+            State
+            <input
+              id="state"
+              type="text"
+              formControlName="state"
+              class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+            />
+          </label>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="zipCode">
+            Zip code
+            <input
+              id="zipCode"
+              type="text"
+              formControlName="zipCode"
+              class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+            />
+          </label>
+          <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="country">
+            Country (ISO-2)
+            <input
+              id="country"
+              type="text"
+              formControlName="country"
+              maxlength="2"
+              class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm uppercase text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+            />
+          </label>
+        </div>
+
+        <label class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]" for="type">
+          Address type
+          <select
+            id="type"
+            formControlName="type"
+            class="mt-2 w-full rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
+          >
+            @for (option of addressTypes; track option) {
+              <option [value]="option">{{ option }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="flex items-center gap-3 text-sm text-[color:var(--ink-700)]">
+          <input
+            type="checkbox"
+            formControlName="isDefault"
+            class="h-4 w-4"
+            style="accent-color: var(--leaf-500)"
+          />
+          Set as default address
+        </label>
+
+        @if (form.touched && form.invalid) {
+          <small class="text-xs text-[color:var(--ink-700)]">Please review the form. Required fields must be completed.</small>
+        }
+
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-3">
+          <a
+            routerLink="/profile/addresses"
+            class="text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)]"
+          >
+            Cancel
+          </a>
+          <button
+            type="submit"
+            class="rounded-full bg-[color:var(--ink-900)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[color:var(--ink-700)] disabled:cursor-not-allowed disabled:opacity-60"
+            [disabled]="isSubmitting()"
+          >
+            {{ isSubmitting() ? 'Saving...' : isEditMode() ? 'Update address' : 'Create address' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+</section>
