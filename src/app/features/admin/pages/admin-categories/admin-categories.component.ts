@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { CategoryItem } from '../../models/admin.models';
@@ -13,6 +13,12 @@ export class AdminCategoriesComponent implements OnInit {
   private readonly adminService = inject(AdminService);
 
   readonly categories = signal<CategoryItem[]>([]);
+  readonly searchQuery = signal('');
+  readonly filteredCategories = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.categories();
+    return this.categories().filter(c => c.name.toLowerCase().includes(query));
+  });
   readonly isLoading = signal(true);
   readonly errorMsg = signal<string | null>(null);
   readonly formError = signal<string | null>(null);

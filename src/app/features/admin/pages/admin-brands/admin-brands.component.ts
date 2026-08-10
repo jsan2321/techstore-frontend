@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { BrandItem } from '../../models/admin.models';
@@ -13,6 +13,12 @@ export class AdminBrandsComponent implements OnInit {
   private readonly adminService = inject(AdminService);
 
   readonly brands = signal<BrandItem[]>([]);
+  readonly searchQuery = signal('');
+  readonly filteredBrands = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.brands();
+    return this.brands().filter(b => b.name.toLowerCase().includes(query));
+  });
   readonly isLoading = signal(true);
   readonly errorMsg = signal<string | null>(null);
   readonly formError = signal<string | null>(null);

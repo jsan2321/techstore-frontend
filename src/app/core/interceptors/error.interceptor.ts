@@ -17,8 +17,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       const canAttemptRefresh =
         error.status === 401 &&
-        !isAuthEndpointRequest(req.url) &&
-        !!authService.getRefreshToken();
+        !isAuthEndpointRequest(req.url);
 
       if (!canAttemptRefresh) {
         if (error.status === 401 && isAuthEndpointRequest(req.url)) {
@@ -46,6 +45,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           return next(withBearerToken(req, response.accessToken));
         }),
         catchError((refreshError) => {
+          refreshTokenSubject.next(null);
           authService.clearSession();
           void router.navigate(['/auth/login']);
           return throwError(() => refreshError);

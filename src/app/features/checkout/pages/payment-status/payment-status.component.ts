@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { OrderResponse } from '../../../../data/models/order.models';
 import { CartService } from '../../../../data/services/cart.service';
 import { OrderService } from '../../../../data/services/order.service';
+import { AuthService } from '../../../../core/auth/auth.service';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 
 const PENDING_ORDER_ID_KEY = 'pending_order_id';
@@ -19,7 +20,9 @@ const PENDING_PROVIDER_ORDER_KEY = 'pending_provider_order_id';
 export class PaymentStatusComponent implements OnInit {
   private readonly orderService = inject(OrderService);
   private readonly cartService = inject(CartService);
+  private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly isCancelled = signal(false);
@@ -30,11 +33,30 @@ export class PaymentStatusComponent implements OnInit {
     const isCancelPath = window.location.pathname.includes('/cancel');
     this.isCancelled.set(isCancelPath);
 
-    if (isCancelPath) {
-      this.loadCancelledOrder();
-    } else {
-      this.capturePayment();
-    }
+    // After a full-page PayPal redirect the Angular app re-bootstraps and the
+    // in-memory access token is gone. Restore the session first via the refresh
+    // cookie before attempting any authenticated API call.
+    this.authService.initializeSession().subscribe({
+      next: (authenticated) => {
+        if (!authenticated) {
+          // No valid session and no refresh cookie — send to login but preserve
+          // the return URL so the user lands back here after logging in.
+          void this.router.navigate(['/auth/login'], {
+            queryParams: { returnUrl: window.location.pathname + window.location.search }
+          });
+          return;
+        }
+
+        if (isCancelPath) {
+          this.loadCancelledOrder();
+        } else {
+          this.capturePayment();
+        }
+      },
+      error: () => {
+        void this.router.navigate(['/auth/login']);
+      }
+    });
   }
 
   private capturePayment(): void {
@@ -131,3 +153,5 @@ export class PaymentStatusComponent implements OnInit {
     return fallback;
   }
 }
+
+

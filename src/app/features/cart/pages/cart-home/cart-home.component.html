@@ -103,7 +103,7 @@
                       type="number"
                       min="1"
                       class="mt-2 w-20 rounded-xl border border-[color:var(--sand-300)] bg-white px-3 py-2 text-sm text-[color:var(--ink-900)] shadow-sm focus:border-[color:var(--accent-600)] focus:outline-none"
-                      [value]="quantities()[item.productId] ?? item.quantity"
+                      [value]="quantities()[item.productId]"
                       (input)="setQuantity(item.productId, $any($event.target).value)"
                     />
                   </label>

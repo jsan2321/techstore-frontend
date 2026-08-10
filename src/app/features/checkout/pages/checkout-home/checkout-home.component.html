@@ -4,7 +4,7 @@
       <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)]">Checkout</p>
       <h2 class="mt-2 text-2xl font-semibold text-[color:var(--ink-900)]">Review and pay</h2>
       <p class="mt-2 text-sm text-[color:var(--ink-700)]">
-        Choose a shipping address, review your order, and continue to PayPal.
+        Choose a shipping address, review your order, and continue to payment.
       </p>
     </div>
     <button
@@ -247,10 +247,10 @@
           (click)="placeOrder()"
           [disabled]="submitting()"
         >
-          {{ submitting() ? 'Submitting...' : 'Place order and pay' }}
+          {{ submitting() ? 'Submitting...' : 'Place order' }}
         </button>
         <p class="mt-3 text-xs text-[color:var(--ink-700)]">
-          You will be redirected to PayPal to complete payment.
+          You will be redirected to PayPal to complete your purchase securely.
         </p>
       </aside>
     </div>

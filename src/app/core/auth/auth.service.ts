@@ -1,13 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, map, Observable, of, tap } from 'rxjs';
 import {
   AuthResponse,
   ForgotPasswordRequest,
   GoogleLoginRequest,
   LoginRequest,
-  LogoutRequest,
-  RefreshTokenRequest,
   ResendEmailConfirmationRequest,
   ResetPasswordRequest,
   RegisteredUserResponse,
@@ -18,7 +16,6 @@ import { TokenService } from './token.service';
 
 type SessionState = {
   accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
 };
@@ -39,13 +36,12 @@ export class AuthService {
       return of(true);
     }
 
-    const refreshToken = this.tokenService.getRefreshToken();
-    if (!refreshToken) {
-      this.syncSessionState();
+    if (localStorage.getItem('has_session') !== 'true') {
+      this.clearSession();
       return of(false);
     }
 
-    return this.refreshAccessToken(refreshToken).pipe(
+    return this.refreshAccessToken().pipe(
       map(() => true),
       catchError(() => {
         this.clearSession();
@@ -56,43 +52,31 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(this.buildUrl(API_CONFIG.auth.login), request)
-      .pipe(tap((response) => this.setSession(response.accessToken, response.refreshToken)));
+      .post<AuthResponse>(this.buildUrl(API_CONFIG.auth.login), request, { withCredentials: true })
+      .pipe(tap((response) => this.setSession(response.accessToken)));
   }
 
   loginWithGoogle(request: GoogleLoginRequest): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(this.buildUrl(API_CONFIG.auth.googleLogin), request)
-      .pipe(tap((response) => this.setSession(response.accessToken, response.refreshToken)));
+      .post<AuthResponse>(this.buildUrl(API_CONFIG.auth.googleLogin), request, { withCredentials: true })
+      .pipe(tap((response) => this.setSession(response.accessToken)));
   }
 
   register(request: RegisterRequest): Observable<RegisteredUserResponse> {
     return this.http.post<RegisteredUserResponse>(this.buildUrl(API_CONFIG.auth.register), request);
   }
 
-  refreshAccessToken(refreshToken?: string): Observable<AuthResponse> {
-    const token = refreshToken ?? this.tokenService.getRefreshToken();
-    if (!token) {
-      return throwError(() => new Error('No refresh token available'));
-    }
-
-    const payload: RefreshTokenRequest = { refreshToken: token };
-
-    return this.http.post<AuthResponse>(this.buildUrl(API_CONFIG.auth.refresh), payload).pipe(
-      tap((response) => this.setSession(response.accessToken, response.refreshToken ?? token))
+  refreshAccessToken(): Observable<AuthResponse> {
+    // withCredentials ensures the HttpOnly refresh cookie is sent even when the
+    // Angular dev proxy is involved (changeOrigin rewrites Host, which can
+    // otherwise suppress cookie forwarding in some browser/proxy combos).
+    return this.http.get<AuthResponse>(this.buildUrl(API_CONFIG.auth.refresh), { withCredentials: true }).pipe(
+      tap((response) => this.setSession(response.accessToken))
     );
   }
 
   logout(): Observable<void> {
-    const refreshToken = this.tokenService.getRefreshToken();
-    if (!refreshToken) {
-      this.clearSession();
-      return of(void 0);
-    }
-
-    const payload: LogoutRequest = { refreshToken };
-
-    return this.http.post<void>(this.buildUrl(API_CONFIG.auth.logout), payload).pipe(
+    return this.http.post<void>(this.buildUrl(API_CONFIG.auth.logout), {}, { withCredentials: true }).pipe(
       catchError(() => of(void 0)),
       tap(() => this.clearSession())
     );
@@ -129,19 +113,14 @@ export class AuthService {
     return this.sessionState().accessToken;
   }
 
-  getRefreshToken(): string | null {
-    return this.sessionState().refreshToken;
-  }
-
-  setSession(accessToken: string, refreshToken?: string | null): void {
+  setSession(accessToken: string): void {
+    localStorage.setItem('has_session', 'true');
     this.tokenService.setAccessToken(accessToken);
-    if (refreshToken) {
-      this.tokenService.setRefreshToken(refreshToken);
-    }
     this.syncSessionState();
   }
 
   clearSession(): void {
+    localStorage.removeItem('has_session');
     this.tokenService.clearTokens();
     this.syncSessionState();
   }
@@ -152,14 +131,12 @@ export class AuthService {
 
   private readSessionState(): SessionState {
     const accessToken = this.tokenService.getAccessToken();
-    const refreshToken = this.tokenService.getRefreshToken();
     const tokenValid = accessToken != null && !this.tokenService.isTokenExpired(accessToken);
     const roles = tokenValid && accessToken ? this.tokenService.getRoles(accessToken) : [];
     const isAdmin = roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
 
     return {
       accessToken: tokenValid ? accessToken : null,
-      refreshToken,
       isAuthenticated: tokenValid,
       isAdmin
     };

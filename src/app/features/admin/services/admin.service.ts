@@ -30,8 +30,8 @@ export class AdminService {
 
   adminLogin(request: AdminLoginRequest): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(this.base + API_CONFIG.admin.login, request)
-      .pipe(tap((res) => this.authService.setSession(res.accessToken, res.refreshToken)));
+      .post<AuthResponse>(this.base + API_CONFIG.admin.login, request, { withCredentials: true })
+      .pipe(tap((res) => this.authService.setSession(res.accessToken)));
   }
 
   // ─── Users ───────────────────────────────────────────────────────────────────

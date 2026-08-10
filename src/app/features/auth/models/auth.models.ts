@@ -28,21 +28,12 @@ export interface ResendEmailConfirmationRequest {
   email: string;
 }
 
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
-export interface LogoutRequest {
-  refreshToken: string;
-}
-
 export interface AuthResponse {
   id: number;
   email: string;
   firstName: string;
   lastName: string;
   accessToken: string;
-  refreshToken: string | null;
   tokenType: string;
 }
 

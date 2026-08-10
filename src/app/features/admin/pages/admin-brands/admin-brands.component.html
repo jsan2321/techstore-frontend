@@ -7,13 +7,38 @@
       <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)]">Brands</h1>
       <p class="mt-2 text-sm text-[color:var(--ink-700)]">Create and maintain product brands.</p>
     </div>
-    <button type="button" (click)="openAdd()"
-      class="inline-flex items-center gap-2 rounded-full bg-[color:var(--ink-900)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm transition hover:bg-[color:var(--ink-700)] active:scale-95">
-      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    <div class="flex items-center gap-3">
+      <button type="button" (click)="loadBrands()" [disabled]="isLoading()" title="Refresh data"
+        class="inline-flex items-center gap-2 rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] shadow-sm transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] disabled:cursor-not-allowed disabled:opacity-60 active:scale-95">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        Refresh
+      </button>
+      <button type="button" (click)="openAdd()"
+        class="inline-flex items-center gap-2 rounded-full bg-[color:var(--ink-900)] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm transition hover:bg-[color:var(--ink-700)] active:scale-95">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        Add Brand
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="relative flex-1 min-w-[220px]">
+      <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-700)] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
-      Add Brand
-    </button>
+      <input
+        type="text"
+        placeholder="Search brands..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="w-full rounded-xl border border-[color:var(--sand-300)] bg-white/80 py-2.5 pl-10 pr-4 text-sm text-[color:var(--ink-900)] shadow-sm focus:outline-none focus:border-[color:var(--accent-600)]"
+      />
+    </div>
   </div>
 
   <!-- Error -->
@@ -31,7 +56,7 @@
   }
 
   <!-- Table -->
-  @if (!isLoading() && brands().length > 0) {
+  @if (!isLoading() && filteredBrands().length > 0) {
     <div class="overflow-x-auto rounded-2xl border border-[color:var(--sand-200)] bg-white/85 shadow-sm">
       <table class="w-full text-sm">
         <thead>
@@ -42,7 +67,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-[color:var(--sand-100)]">
-          @for (brand of brands(); track brand.id) {
+          @for (brand of filteredBrands(); track brand.id) {
             <tr class="transition-colors hover:bg-[color:var(--sand-50)]">
               <td class="px-5 py-3.5 text-[color:var(--ink-700)] tabular-nums">{{ brand.id }}</td>
               <td class="px-5 py-3.5 font-medium text-[color:var(--ink-900)]">{{ brand.name }}</td>
@@ -67,11 +92,11 @@
         </tbody>
       </table>
     </div>
-    <p class="text-xs text-[color:var(--ink-700)]">{{ brands().length }} brand(s)</p>
+    <p class="text-xs text-[color:var(--ink-700)]">{{ filteredBrands().length }} brand(s)</p>
   }
 
   <!-- Empty -->
-  @if (!isLoading() && !errorMsg() && brands().length === 0) {
+  @if (!isLoading() && !errorMsg() && filteredBrands().length === 0) {
     <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[color:var(--sand-300)] bg-white/50 px-6 py-16 text-center">
       <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--sand-100)] text-[color:var(--accent-500)]">
         <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

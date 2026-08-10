@@ -6,10 +6,10 @@
       <h1 class="mt-2 text-3xl font-semibold text-[color:var(--ink-900)]">Orders</h1>
       <p class="mt-2 text-sm text-[color:var(--ink-700)]">Manage customer orders, view invoices, and transition fulfillment status.</p>
     </div>
-    <button type="button" (click)="loadOrders()" [disabled]="isLoading()"
-      class="inline-flex items-center gap-2 rounded-full border border-[color:var(--sand-300)] bg-white px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] shadow-sm hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] transition-all cursor-pointer active:scale-95 disabled:opacity-50">
+    <button type="button" (click)="loadOrders()" [disabled]="isLoading()" title="Refresh data"
+      class="inline-flex items-center gap-2 rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] shadow-sm transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] disabled:cursor-not-allowed disabled:opacity-60 active:scale-95">
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H17.2" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
       </svg>
       Refresh
     </button>
@@ -211,8 +211,19 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
         </svg>
       </div>
-      <h3 class="mt-4 text-lg font-semibold text-[color:var(--ink-900)]">No orders found</h3>
-      <p class="mt-2 text-sm text-[color:var(--ink-700)]">We couldn't find any orders matching "{{ searchQuery() }}" under the "{{ statusFilter() }}" filter status.</p>
+      @if (orders().length === 0) {
+        <h3 class="mt-4 text-lg font-semibold text-[color:var(--ink-900)]">No orders yet</h3>
+        <p class="mt-2 text-sm text-[color:var(--ink-700)]">There are currently no orders in the system.</p>
+      } @else {
+        <h3 class="mt-4 text-lg font-semibold text-[color:var(--ink-900)]">No orders found</h3>
+        <p class="mt-2 text-sm text-[color:var(--ink-700)]">
+          @if (searchQuery()) {
+            We couldn't find any orders matching "{{ searchQuery() }}" under the "{{ statusFilter() }}" filter status.
+          } @else {
+            We couldn't find any orders under the "{{ statusFilter() }}" filter status.
+          }
+        </p>
+      }
     </div>
   }
 </section>

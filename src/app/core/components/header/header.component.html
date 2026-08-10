@@ -1,0 +1,82 @@
+<header class="sticky top-0 z-50 w-full border-b border-[color:var(--sand-300)] bg-white/70 backdrop-blur-md">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+    <div class="flex items-center gap-8">
+      <a routerLink="/" class="text-xl font-bold tracking-tight text-[color:var(--ink-900)]">
+        TechStore.
+      </a>
+      @if (!authService.isAdmin()) {
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-[color:var(--ink-700)]">
+          <a routerLink="/" routerLinkActive="text-[color:var(--accent-600)]" [routerLinkActiveOptions]="{exact: true}" class="transition hover:text-[color:var(--accent-600)]">Home</a>
+          <a routerLink="/shop" routerLinkActive="text-[color:var(--accent-600)]" class="transition hover:text-[color:var(--accent-600)]">Shop</a>
+          <a routerLink="/about" routerLinkActive="text-[color:var(--accent-600)]" class="transition hover:text-[color:var(--accent-600)]">About</a>
+          <a routerLink="/contact" routerLinkActive="text-[color:var(--accent-600)]" class="transition hover:text-[color:var(--accent-600)]">Contact</a>
+        </nav>
+      }
+    </div>
+    
+    <div class="flex items-center gap-4">
+      @if (!authService.isAdmin()) {
+        <a routerLink="/cart" class="relative flex items-center justify-center rounded-full bg-[color:var(--ink-900)] px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-[color:var(--ink-700)]">
+          <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          Cart
+          @if (cartService.cartCount() > 0) {
+            <span class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--accent-600)] text-[10px] font-bold text-white shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+              {{ cartService.cartCount() > 99 ? '99+' : cartService.cartCount() }}
+            </span>
+          }
+        </a>
+      }
+      @if (authService.isAuthenticated()) {
+        <div class="relative">
+          <button (click)="toggleDropdown()" class="flex cursor-pointer items-center justify-center rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)]">
+            Account
+            <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          @if (isDropdownOpen()) {
+            <div class="absolute right-0 mt-2 w-56 rounded-2xl border border-[color:var(--sand-300)] bg-white shadow-xl py-2 flex flex-col z-50">
+              <a routerLink="/profile" (click)="closeDropdown()" class="flex items-center px-4 py-2.5 text-sm font-medium text-[color:var(--ink-700)] hover:bg-[color:var(--sand-300)]/30 hover:text-[color:var(--ink-900)] transition-colors">
+                <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Profile Settings
+              </a>
+              @if (!authService.isAdmin()) {
+                <a routerLink="/orders" (click)="closeDropdown()" class="flex items-center px-4 py-2.5 text-sm font-medium text-[color:var(--ink-700)] hover:bg-[color:var(--sand-300)]/30 hover:text-[color:var(--ink-900)] transition-colors">
+                  <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                  Order History
+                </a>
+              }
+              @if (authService.isAdmin()) {
+                <div class="my-1 border-t border-[color:var(--sand-300)]"></div>
+                <a routerLink="/admin/users" (click)="closeDropdown()" class="flex items-center px-4 py-2.5 text-sm font-bold text-[color:var(--accent-600)] hover:bg-[color:var(--sand-300)]/30 transition-colors">
+                  <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Admin Dashboard
+                </a>
+              }
+              <div class="my-1 border-t border-[color:var(--sand-300)]"></div>
+              <button (click)="logout()" class="flex w-full items-center text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
+                <svg class="mr-3 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Log out
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/auth/login" class="flex items-center justify-center rounded-full border border-[color:var(--sand-300)] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--ink-700)] transition hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)]">
+          Log in
+        </a>
+      }
+    </div>
+  </div>
+</header>

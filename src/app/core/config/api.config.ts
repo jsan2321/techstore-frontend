@@ -1,5 +1,7 @@
 export const API_CONFIG = {
-  baseUrl: 'http://localhost:8081/api/v1',
+  // The public frontend proxies this path to the private Render API. Keeping it
+  // same-origin also lets the browser safely send the HttpOnly refresh cookie.
+  baseUrl: '/api/v1',
   auth: {
     login: '/auth/login',
     googleLogin: '/auth/google-login',

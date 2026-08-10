@@ -43,7 +43,7 @@
           <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)] font-semibold">Payment Status</p>
           <h2 class="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--ink-900)]">Checkout Cancelled</h2>
           <p class="mt-2 text-sm max-w-md text-[color:var(--ink-700)]">
-            Your payment via PayPal was cancelled. No funds were deducted. Your order is saved, and you can try paying again now or finish the payment later from your order history.
+            Your payment was cancelled. Your order is saved, and you can try checking out again later.
           </p>
         </div>
       } @else {
@@ -57,7 +57,7 @@
           <p class="text-xs uppercase tracking-[0.35em] text-[color:var(--accent-600)] font-semibold font-sans">Payment Confirmed</p>
           <h2 class="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--ink-900)]">Thank you for your order!</h2>
           <p class="mt-2 text-sm max-w-md text-[color:var(--ink-700)]">
-            We've received your payment and are processing order #{{ order()!.id }}. A confirmation email has been sent to your account.
+            Your payment for order #{{ order()!.id }} was successful. We will process your order shortly.
           </p>
         </div>
       }

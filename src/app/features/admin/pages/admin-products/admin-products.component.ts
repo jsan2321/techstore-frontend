@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import {
   AdminProductListItem,
@@ -14,7 +14,7 @@ import {
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, CommonModule],
   templateUrl: './admin-products.component.html',
 })
 export class AdminProductsComponent implements OnInit {
@@ -48,9 +48,9 @@ export class AdminProductsComponent implements OnInit {
 
     const discountVal = this.discountFilter();
     if (discountVal === 'discounted') {
-      list = list.filter((p) => p.discount !== null && p.discount.percentage > 0);
+      list = list.filter((p) => p.discount && p.discount.percentage > 0);
     } else if (discountVal === 'regular') {
-      list = list.filter((p) => p.discount === null || p.discount.percentage === 0);
+      list = list.filter((p) => !p.discount || p.discount.percentage === 0);
     }
 
     return list;

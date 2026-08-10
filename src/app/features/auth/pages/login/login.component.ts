@@ -58,7 +58,8 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          void this.router.navigate(['/shop']);
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/shop';
+          void this.router.navigateByUrl(returnUrl);
         },
         error: (error: unknown) => {
           this.errorMessage.set(this.resolveError(error));
@@ -100,7 +101,8 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          void this.router.navigate(['/shop']);
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/shop';
+          void this.router.navigateByUrl(returnUrl);
         },
         error: (error: unknown) => {
           this.errorMessage.set(this.resolveError(error));

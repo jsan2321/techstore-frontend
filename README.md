@@ -37,7 +37,7 @@ Start the local development server:
 npm start
 ```
 
-Open `http://localhost:4200/` in a browser. The default API base URL is defined in `src/app/core/config/api.config.ts` and currently targets `http://localhost:8081/api/v1`.
+Open `http://localhost:4200/` in a browser. The default API base URL is `/api/v1`; use Angular's development proxy or update your local server configuration when running the API separately. In the Render image, Nginx proxies `/api` to the private backend through `BACKEND_UPSTREAM`.
 
 ## Google Sign-In
 
@@ -70,6 +70,14 @@ docker build -t techstore-frontend .
 ```
 
 The Dockerfile builds the Angular application and serves the generated static files with Nginx on port `80`.
+
+## Deployment notes
+
+Set `BACKEND_UPSTREAM` on the Render frontend service to the private backend URL, including its port. Nginx applies SPA fallback, gzip, request-size limits, and browser security headers. The public frontend is the only service exposed to the internet; API requests stay same-origin under `/api`.
+
+Set `SENTRY_DSN`, `SENTRY_ENVIRONMENT=render`, and `SENTRY_RELEASE` as Render environment variables to enable browser error reporting. The frontend generates `runtime-config.js` when its Nginx container starts; no DSN needs to be compiled into source code. Error events remove user, request body, cookies, and headers before sending.
+
+The checkout is explicitly a PayPal Sandbox demo. It displays a persistent test-payment notice and must not be described as real-money payment processing.
 
 ## Project structure
 
