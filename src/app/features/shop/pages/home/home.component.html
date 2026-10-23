@@ -1,86 +1,67 @@
 <div class="space-y-12">
-  <!-- Category Navigation Pills Carousel -->
-  <nav class="relative z-10 w-full overflow-hidden py-2 bg-transparent">
-    <div class="categories-container flex overflow-x-auto pb-3 mask-fade-edges hide-scrollbar">
-      <!-- Infinite marquee wrapper -->
-      <div class="animate-marquee-ltr flex gap-3 pr-3">
-        <!-- First set -->
+  <!-- Category Navigation Pills -->
+  <nav class="relative z-10 w-full py-2 bg-transparent" aria-label="Product Categories">
+    <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+      <button
+        (click)="selectCategory('')"
+        type="button"
+        class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 bg-white border border-neutral-200 text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 shadow-sm cursor-pointer active:scale-95"
+      >
+        All Hardware
+      </button>
+      @for (cat of categories(); track cat.id) {
         <button
-          (click)="selectCategory('')"
-          class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 bg-white/70 border border-[color:var(--sand-300)] text-[color:var(--ink-700)] hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] shadow-sm hover:shadow-md cursor-pointer focus:outline-none"
+          (click)="selectCategory(cat.name)"
+          type="button"
+          class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 bg-white border border-neutral-200 text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 shadow-sm cursor-pointer active:scale-95"
         >
-          All Categories
+          {{ cat.name }}
         </button>
-        @for (cat of categories(); track 'first-' + cat.id) {
-          <button
-            (click)="selectCategory(cat.name)"
-            class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 bg-white/70 border border-[color:var(--sand-300)] text-[color:var(--ink-700)] hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] shadow-sm hover:shadow-md cursor-pointer focus:outline-none"
-          >
-            {{ cat.name }}
-          </button>
-        }
-        
-        <!-- Second set (Duplicate for seamless loop) -->
-        <button
-          (click)="selectCategory('')"
-          class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 bg-white/70 border border-[color:var(--sand-300)] text-[color:var(--ink-700)] hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] shadow-sm hover:shadow-md cursor-pointer focus:outline-none"
-        >
-          All Categories
-        </button>
-        @for (cat of categories(); track 'second-' + cat.id) {
-          <button
-            (click)="selectCategory(cat.name)"
-            class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 bg-white/70 border border-[color:var(--sand-300)] text-[color:var(--ink-700)] hover:border-[color:var(--accent-600)] hover:text-[color:var(--accent-600)] shadow-sm hover:shadow-md cursor-pointer focus:outline-none"
-          >
-            {{ cat.name }}
-          </button>
-        }
-      </div>
+      }
     </div>
   </nav>
 
-  <!-- Premium Hero Banner -->
-  <header class="relative overflow-hidden rounded-[2.5rem] border border-[color:var(--sand-300)] bg-gradient-to-br from-slate-900 via-gray-900 to-zinc-950 p-8 md:p-12 lg:p-16 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.8)] text-white">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_120%,rgba(16,185,129,0.15),transparent_50%)]"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.1),transparent_40%)]"></div>
-    
+  <!-- Architectural Hero Banner -->
+  <header class="relative overflow-hidden rounded-3xl border border-neutral-800 bg-neutral-950 p-8 md:p-12 lg:p-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(37,99,235,0.18),transparent_50%)] pointer-events-none"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_10%_90%,rgba(16,185,129,0.12),transparent_40%)] pointer-events-none"></div>
+
     <div class="relative z-10 grid gap-8 lg:grid-cols-12 lg:items-center">
       <div class="lg:col-span-7 space-y-6">
-        <div class="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-400 border border-indigo-500/20">
+        <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-300 border border-white/15 backdrop-blur-sm">
           <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          Revolutionary Tech
+          Curated Hardware 2026
         </div>
-        <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-          Experience the Future of Mobile.
+        <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-white leading-tight">
+          Precision Engineering for Creators.
         </h1>
-        <p class="max-w-xl text-base md:text-lg text-slate-300 leading-relaxed font-light">
-          Meet the phone with a stunning wrap-around display, adaptive AI performance, and a pro-grade camera system built for the next generation.
+        <p class="max-w-xl text-base sm:text-lg text-neutral-300 leading-relaxed font-light">
+          High-performance peripherals, workstations, and displays curated for engineers, designers, and visionaries.
         </p>
-        <div class="flex flex-wrap gap-4 pt-2">
+        <div class="flex flex-wrap items-center gap-4 pt-2">
           <a
             routerLink="/shop"
-            class="group relative inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-950 shadow-lg transition-all duration-300 hover:bg-slate-100 hover:scale-[1.03] hover:shadow-xl active:scale-[0.98]"
+            class="group relative inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-neutral-950 shadow-md transition-all duration-200 hover:bg-neutral-100 hover:shadow-lg active:scale-95"
           >
-            Shop Now
+            Explore Catalog
             <svg class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </a>
-          <button
-            type="button"
-            class="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900/50 px-8 py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-all duration-300 hover:bg-slate-800/80 hover:border-slate-500"
+          <a
+            href="#featured-products"
+            class="inline-flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/60 px-8 py-3.5 text-xs font-bold uppercase tracking-[0.15em] text-neutral-200 backdrop-blur-sm transition-all duration-200 hover:bg-neutral-800 hover:border-neutral-500 hover:text-white active:scale-95"
           >
-            Learn More
-          </button>
+            View Collection
+          </a>
         </div>
       </div>
       <div class="lg:col-span-5 flex justify-center lg:justify-end">
-        <div class="relative w-full max-w-[340px] aspect-[4/5] md:max-w-[400px]">
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent rounded-[2rem] z-20"></div>
+        <div class="relative w-full max-w-[340px] aspect-[4/5] md:max-w-[400px] flex items-center justify-center">
           <img
             src="/images/phone_hero.png"
-            alt="Futuristic Wrap-Around Display Phone"
-            class="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-[float_4s_ease-in-out_infinite]"
+            alt="Precision Hardware Showcase"
+            class="w-full h-full object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.7)] animate-[float_4s_ease-in-out_infinite] transition-transform duration-500 hover:scale-105"
           />
         </div>
       </div>
@@ -88,15 +69,15 @@
   </header>
 
   <!-- Featured Products Section -->
-  <section class="space-y-6">
+  <section id="featured-products" class="space-y-6 pt-4">
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl md:text-3xl font-bold text-[color:var(--ink-900)] tracking-tight">Featured Masterpieces</h2>
-        <p class="text-sm text-[color:var(--ink-700)] mt-1">Handpicked elite tech selected for performance and quality.</p>
+        <h2 class="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">Featured Masterpieces</h2>
+        <p class="text-sm text-neutral-500 mt-1">Handpicked elite tech selected for performance and quality.</p>
       </div>
       <a
         routerLink="/shop"
-        class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[color:var(--accent-600)] transition-all duration-300 hover:text-[color:var(--accent-700)] group"
+        class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-600 transition-all duration-200 hover:text-blue-700 group"
       >
         View All Shop
         <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -135,13 +116,13 @@
       </div>
     } @else {
       @if (featuredProducts().length === 0) {
-        <div class="rounded-[2.5rem] border border-[color:var(--sand-300)] bg-white/70 p-12 text-center shadow-inner">
-          <p class="text-sm text-[color:var(--ink-700)]">No featured masterpieces available right now. Please check back later.</p>
+        <div class="rounded-3xl border border-neutral-200 bg-white p-12 text-center shadow-sm">
+          <p class="text-sm text-neutral-500">No featured masterpieces available right now. Please check back later.</p>
         </div>
       } @else {
         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           @for (prod of featuredProducts(); track prod.id) {
-            <div class="group relative flex flex-col rounded-[2rem] border border-[color:var(--sand-300)] bg-white/95 p-4 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)]">
+            <div class="group relative flex flex-col rounded-3xl border border-neutral-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
               <app-product-card class="flex-grow" [product]="prod" (add)="addToCart($event)"></app-product-card>
             </div>
           }

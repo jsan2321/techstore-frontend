@@ -1,44 +1,54 @@
-<article class="group flex h-full flex-col overflow-hidden rounded-3xl border border-[color:var(--sand-300)] bg-white/90 shadow-[0_18px_40px_-32px_rgba(25,18,8,0.6)] transition hover:-translate-y-1 hover:shadow-[0_24px_60px_-38px_rgba(25,18,8,0.6)]">
-  <div class="relative h-48 overflow-hidden bg-[linear-gradient(120deg,#f7efe4,#f0e1cc)]">
+<article class="group flex h-full flex-col overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+  <div class="relative h-52 overflow-hidden bg-neutral-100/90 flex items-center justify-center p-4">
     @if (product.imageUrl) {
       <img
-        class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
         [src]="product.imageUrl"
         [alt]="product.name"
         loading="lazy"
       />
     } @else {
-      <div class="flex h-full items-center justify-center text-sm uppercase tracking-[0.2em] text-[color:var(--ink-700)]">
-        No image
+      <div class="flex flex-col items-center justify-center text-neutral-400 gap-1">
+        <svg class="h-8 w-8 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-400">No preview</span>
       </div>
     }
+
     @if (product.discount?.percentage) {
-      <span class="absolute left-4 top-4 rounded-full bg-[color:var(--accent-600)] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+      <span class="absolute left-3.5 top-3.5 rounded-full bg-blue-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
         {{ product.discount?.percentage }}% off
+      </span>
+    }
+
+    @if (product.stock <= 0) {
+      <span class="absolute right-3.5 top-3.5 rounded-full bg-neutral-900/80 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-300 border border-neutral-700">
+        Sold Out
       </span>
     }
   </div>
 
   <div class="flex flex-1 flex-col gap-3 px-5 pb-5 pt-4">
     <div>
-      <p class="text-xs uppercase tracking-[0.2em] text-[color:var(--ink-700)]">{{ product.brand }}</p>
+      <p class="text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">{{ product.brand }}</p>
       <a
-        class="mt-1 block text-lg font-semibold text-[color:var(--ink-900)] transition hover:text-[color:var(--accent-600)]"
+        class="mt-1 block text-base font-bold text-neutral-900 leading-snug transition hover:text-blue-600 line-clamp-1"
         [routerLink]="['/products', product.id]"
         >{{ product.name }}</a
       >
-      <p class="mt-2 max-h-10 overflow-hidden text-sm text-[color:var(--ink-700)]">
+      <p class="mt-1.5 text-xs text-neutral-500 line-clamp-2 leading-relaxed">
         {{ product.description }}
       </p>
     </div>
 
-    <div class="mt-auto flex flex-wrap items-center justify-between gap-3">
+    <div class="mt-auto flex flex-wrap items-center justify-between gap-3 pt-2">
       <div>
-        <p class="text-lg font-semibold text-[color:var(--ink-900)]">
+        <p class="text-lg font-bold text-neutral-900 tracking-tight">
           ${{ product.effectivePrice | number: '1.2-2' }}
         </p>
         @if (product.discount?.percentage) {
-          <p class="text-xs text-[color:var(--ink-700)] line-through">
+          <p class="text-xs text-neutral-400 line-through">
             ${{ product.originalPrice | number: '1.2-2' }}
           </p>
         }
@@ -47,23 +57,25 @@
       @if (canAdd) {
         <div class="flex items-center gap-2">
           @if (product.stock > 0) {
-            <div class="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-0.5 shadow-sm">
+            <div class="flex items-center gap-1 rounded-full border border-neutral-200 bg-neutral-50 p-0.5 shadow-inner">
               <button
                 type="button"
                 (click)="decrement()"
                 [disabled]="quantity <= 1"
-                class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:opacity-40 focus:outline-none"
+                aria-label="Decrease quantity"
+                class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-neutral-600 shadow-sm transition hover:bg-neutral-100 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none cursor-pointer"
               >
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
                 </svg>
               </button>
-              <span class="w-5 text-center text-xs font-bold text-slate-800">{{ quantity }}</span>
+              <span class="w-5 text-center text-xs font-bold text-neutral-800">{{ quantity }}</span>
               <button
                 type="button"
                 (click)="increment()"
                 [disabled]="quantity >= product.stock"
-                class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 disabled:opacity-40 focus:outline-none"
+                aria-label="Increase quantity"
+                class="flex h-6 w-6 items-center justify-center rounded-full bg-white text-neutral-600 shadow-sm transition hover:bg-neutral-100 hover:text-neutral-950 disabled:opacity-30 disabled:cursor-not-allowed focus:outline-none cursor-pointer"
               >
                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -73,11 +85,11 @@
           }
           <button
             type="button"
-            class="rounded-full border border-[color:rgba(31,26,20,0.12)] bg-[color:var(--ink-900)] px-3.5 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-[color:var(--ink-700)] disabled:cursor-not-allowed disabled:bg-[color:rgba(31,26,20,0.3)] shadow-sm active:scale-95"
+            class="rounded-full bg-neutral-950 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400 shadow-sm active:scale-95 cursor-pointer"
             [disabled]="product.stock <= 0"
             (click)="handleAddToCart()"
           >
-            {{ product.stock > 0 ? 'Add' : 'Out of stock' }}
+            {{ product.stock > 0 ? 'Add' : 'Sold Out' }}
           </button>
         </div>
       }

@@ -32,13 +32,12 @@ export class ContactComponent {
     this.successMessage.set(null);
     this.isSubmitting.set(true);
 
-    // Simulate API request to send support inquiry
     setTimeout(() => {
       this.isSubmitting.set(false);
       this.successMessage.set(
-        'Thank you! Your message has been sent. Our support concierge will get back to you within 24 hours.'
+        'Inquiry validated successfully! Form submission captured in sandbox demonstration state.'
       );
       this.form.reset();
-    }, 1500);
+    }, 1200);
   }
 }

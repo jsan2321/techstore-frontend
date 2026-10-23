@@ -2,6 +2,25 @@
 @import 'tailwindcss';
 
 :root {
+  /* Architectural Neutral & Brand Tokens */
+  --surface-base: #fafaf9;
+  --surface-card: #ffffff;
+  --surface-elevated: #f5f5f4;
+  
+  --border-subtle: #e7e5e4;
+  --border-strong: #d6d3d1;
+
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
+
+  --brand-primary: #2563eb;
+  --brand-hover: #1d4ed8;
+  --brand-subtle: #eff6ff;
+
+  --state-success: #10b981;
+  --state-danger: #ef4444;
+
   /* Sand (Backgrounds & Borders) */
   --sand-50: #fafaf9;
   --sand-100: #f5f5f4;
@@ -28,6 +47,15 @@
   
   /* Leaf (Success) */
   --leaf-500: #22c55e;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
 }
 
 @theme {
@@ -92,11 +120,13 @@
     -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   }
 
-  .hide-scrollbar {
+  .hide-scrollbar,
+  .no-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-  .hide-scrollbar::-webkit-scrollbar {
+  .hide-scrollbar::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
 
