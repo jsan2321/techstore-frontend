@@ -1,23 +1,57 @@
 <div class="space-y-12">
-  <!-- Category Navigation Pills -->
-  <nav class="relative z-10 w-full py-2 bg-transparent" aria-label="Product Categories">
-    <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
-      <button
-        (click)="selectCategory('')"
-        type="button"
-        class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 bg-white border border-neutral-200 text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 shadow-sm cursor-pointer active:scale-95"
-      >
-        All Hardware
-      </button>
-      @for (cat of categories(); track cat.id) {
-        <button
-          (click)="selectCategory(cat.name)"
-          type="button"
-          class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 bg-white border border-neutral-200 text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 shadow-sm cursor-pointer active:scale-95"
-        >
-          {{ cat.name }}
-        </button>
-      }
+  <!-- Category Navigation Infinite Marquee Carousel -->
+  <nav class="relative z-10 w-full py-3 overflow-hidden" aria-label="Product Categories">
+    <!-- Left Pristine Gradient Dissolve (Smooth Pure Fade, No Smudge/Blur) -->
+    <div class="pointer-events-none absolute left-0 top-0 bottom-0 z-20 w-28 sm:w-44 bg-gradient-to-r from-white via-white/90 via-30% to-transparent"></div>
+
+    <!-- Right Pristine Gradient Dissolve (Smooth Pure Fade, No Smudge/Blur) -->
+    <div class="pointer-events-none absolute right-0 top-0 bottom-0 z-20 w-28 sm:w-44 bg-gradient-to-l from-white via-white/90 via-30% to-transparent"></div>
+
+    <!-- Infinite Carousel Track with Breathing Room for Pill Shadows -->
+    <div class="overflow-hidden py-1.5">
+      <div class="animate-infinite-marquee flex w-max">
+        <!-- Primary Interactive Set -->
+        <div class="flex shrink-0 items-center gap-3 pr-3">
+          <button
+            (click)="selectCategory('')"
+            type="button"
+            class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all duration-300 bg-white border border-neutral-200/90 text-neutral-700 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white shadow-sm hover:shadow-md cursor-pointer active:scale-95"
+          >
+            All Hardware
+          </button>
+          @for (cat of categories(); track 'set1-' + cat.id) {
+            <button
+              (click)="selectCategory(cat.name)"
+              type="button"
+              class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all duration-300 bg-white border border-neutral-200/90 text-neutral-700 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white shadow-sm hover:shadow-md cursor-pointer active:scale-95"
+            >
+              {{ cat.name }}
+            </button>
+          }
+        </div>
+
+        <!-- Cloned Set (Duplicate for Seamless Infinite Loop) -->
+        <div class="flex shrink-0 items-center gap-3 pr-3" aria-hidden="true">
+          <button
+            (click)="selectCategory('')"
+            type="button"
+            tabindex="-1"
+            class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all duration-300 bg-white border border-neutral-200/90 text-neutral-700 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white shadow-sm hover:shadow-md cursor-pointer active:scale-95"
+          >
+            All Hardware
+          </button>
+          @for (cat of categories(); track 'set2-' + cat.id) {
+            <button
+              (click)="selectCategory(cat.name)"
+              type="button"
+              tabindex="-1"
+              class="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all duration-300 bg-white border border-neutral-200/90 text-neutral-700 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white shadow-sm hover:shadow-md cursor-pointer active:scale-95"
+            >
+              {{ cat.name }}
+            </button>
+          }
+        </div>
+      </div>
     </div>
   </nav>
 

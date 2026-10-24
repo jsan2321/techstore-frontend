@@ -1,97 +1,153 @@
 # TechStore Frontend
 
-TechStore Frontend is the Angular web client for the TechStore e-commerce application. It connects to the separate TechStore Backend API for catalog data, accounts, carts, checkout, orders, and administration.
+[![Angular](https://img.shields.io/badge/Angular-21-red.svg?logo=angular)](https://angular.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com/)
+[![Vitest](https://img.shields.io/badge/Vitest-4.0-yellow.svg?logo=vitest)](https://vitest.dev/)
+[![Backend Companion](https://img.shields.io/badge/Backend-Spring%20Boot%203.4-brightgreen.svg?logo=springboot)](https://github.com/jsan2321/techstore-backend)
 
-## Features
+> The modern web client for the **TechStore** e-commerce platform. Built with **Angular 21** utilizing **Standalone Components**, fine-grained **Signals reactivity**, and styled with **Tailwind CSS v4**.
 
-- Product catalog browsing, search, filters, brands, and categories.
-- Customer registration, login, Google Sign-In, email confirmation, and password recovery.
-- Persisted shopping cart, saved addresses, checkout, and PayPal Sandbox payment flow.
-- Customer order history and profile management.
-- Administrative product, catalog, user, and order-management views.
+🌐 **API Repository**: [TechStore Backend (Spring Boot 3.4)](https://github.com/jsan2321/techstore-backend)
 
-## Technology
+---
 
-- Angular 21 with standalone components, signals, and Angular Router
-- TypeScript 5.9, RxJS, Tailwind CSS 4, and PostCSS
-- Angular build system and Vitest unit-test runner
-- Nginx-based Docker image for static hosting
+## 📌 Table of Contents
 
-## Prerequisites
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+- [Admin Portal Access](#-admin-portal-access)
+- [Testing the Checkout & PayPal Sandbox](#-testing-the-checkout--paypal-sandbox)
+- [Project Architecture](#-project-architecture)
+- [Build, Test & Deployment](#-build-test--deployment)
 
-- Node.js compatible with the project dependencies
-- npm 11 (the project records `npm@11.6.2`)
-- A running TechStore Backend API, normally at `http://localhost:8081`
+---
 
-## Install and run
+## ✨ Features
 
-Install dependencies:
+* **Product Catalog**: Live search, multi-faceted category and brand filtering, dynamic inventory status badges, and pagination.
+* **Reactive Shopping Cart**: Synchronized state across client Signals and persisted user sessions in the backend.
+* **3-Step Checkout Flow**: Shipping address selection/creation, order summary validation, and PayPal Sandbox payment modal.
+* **Customer Authentication**: Self-registration, email confirmation, password recovery, JWT session renewal via HttpOnly cookies, and Google Sign-In.
+* **Customer Profile**: Multi-address management (shipping/billing) with ISO country validation, plus full order history.
+* **Dedicated Admin Dashboard**: Isolated admin layout (`/admin`) for managing products, categories, brands, orders, and customer accounts.
+
+---
+
+## 🛠 Tech Stack
+
+| Component | Technology |
+| :--- | :--- |
+| **Framework** | Angular 21 (Standalone Components, Signals, Reactive Forms, Router) |
+| **Language** | TypeScript 5.9 |
+| **Styling** | Tailwind CSS v4, PostCSS, custom CSS variables |
+| **State Management** | Angular Signals & RxJS Observables |
+| **Unit Testing** | Vitest (`vitest@4.0`) |
+| **Error Monitoring** | Sentry Browser SDK with client-side PII scrubbing |
+| **Proxy & Serving** | Angular CLI dev proxy (`proxy.conf.json`) and Nginx for production |
+
+---
+
+## ⚡ Prerequisites
+
+* **Node.js**: 20+ (LTS)
+* **npm**: 11 (`npm@11.6.2`)
+* **TechStore Backend API**: Running on **`http://localhost:8080`** (see [Backend Setup](https://github.com/jsan2321/techstore-backend))
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
 
 ```bash
 npm ci
 ```
 
-Start the local development server:
+### 2. Start the Development Server
 
 ```bash
 npm start
 ```
 
-Open `http://localhost:4200/` in a browser. The default API base URL is `/api/v1`; use Angular's development proxy or update your local server configuration when running the API separately. In the Render image, Nginx proxies `/api` to the private backend through `BACKEND_UPSTREAM`.
+* Open **`http://localhost:4200`** in your browser.
+* All `/api` requests are automatically routed to `http://localhost:8080` via `proxy.conf.json`.
 
-## Google Sign-In
+---
 
-The Google Identity Services client reads a browser OAuth client ID from this meta tag in `src/index.html`:
+## 🔑 Admin Portal Access
 
-```html
-<meta name="google-signin-client_id" content="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com">
+The administrative dashboard is intentionally hidden from public customer navigation.
+
+1. Navigate directly to **[`http://localhost:4200/admin/auth/login`](http://localhost:4200/admin/auth/login)**.
+2. Sign in with the seeded administrator credentials:
+   * **Email**: `admin@goodshopping.local`
+   * **Password**: `Admin123!`
+3. Once authenticated with `ROLE_ADMIN`, you can manage:
+   * **Dashboard Overview**: `/admin`
+   * **Inventory & Products**: `/admin/products`
+   * **Order Management**: `/admin/orders`
+   * **Categories & Brands**: `/admin/categories`, `/admin/brands`
+   * **User Accounts**: `/admin/users`
+
+---
+
+## 💳 Testing the Checkout & PayPal Sandbox
+
+When testing order placement in Sandbox mode:
+
+1. Add an in-stock product to your cart and proceed to `/checkout`.
+2. Fill in or select a shipping address.
+   * *Important*: The **Country** field requires a **2-letter ISO code** (e.g., `US`, `ES`, `CA`, `MX`).
+3. Click **Proceed to PayPal**.
+4. When the PayPal popup appears:
+   * ❌ **Do NOT use** the store's business email (`sb-...@business.example.com`) or PayPal will reject it with *"You cannot pay yourself"*.
+   * ✅ **Use a Personal Sandbox Account** (`sb-...@personal.example.com`) from your [PayPal Developer Dashboard](https://developer.paypal.com) under `Testing Tools` > `Sandbox Accounts`.
+5. Approve the test transaction to complete the order and verify inventory deduction.
+
+---
+
+## 📂 Project Architecture
+
+```
+src/app/
+├── core/                  # Core services, API config, HTTP interceptors, route guards
+│   ├── auth/              # AuthService, token handling, session tracking
+│   ├── config/            # API endpoint configuration
+│   ├── guards/            # authGuard, adminGuard
+│   └── interceptors/      # CSRF and Auth HTTP interceptors
+│
+├── features/              # Feature modules (views, pages, sub-routes)
+│   ├── admin/             # Admin portal (dashboard, orders, products, users)
+│   ├── auth/              # Customer login, register, password reset
+│   ├── checkout/          # Multi-step checkout & payment processing
+│   ├── profile/           # Saved address book and order history
+│   └── shop/              # Product catalog, filters, search, and details
+│
+├── shared/                # Reusable UI components (buttons, badges, empty states, spinners)
+└── data/                  # API data services and domain DTO models
 ```
 
-A browser OAuth client ID is intentionally public. It is not a client secret and cannot provide access to a Google account. Configure the allowed JavaScript origins for this client in Google Cloud Console, and keep any client secret exclusively on the backend.
+---
 
-## Build and test
+## 🧪 Build, Test & Deployment
 
-Create an optimized build:
-
-```bash
-npm run build
-```
-
-Run unit tests:
-
+### Run Unit Tests
 ```bash
 npm test
 ```
 
-Build a container image:
+### Production Build
+```bash
+npm run build
+```
+Compiled production assets are output to `dist/techstore-frontend`.
 
+### Build & Run Container
 ```bash
 docker build -t techstore-frontend .
+docker run -p 80:80 techstore-frontend
 ```
-
-The Dockerfile builds the Angular application and serves the generated static files with Nginx on port `80`.
-
-## Deployment notes
-
-Set `BACKEND_UPSTREAM` on the Render frontend service to the private backend URL, including its port. Nginx applies SPA fallback, gzip, request-size limits, and browser security headers. The public frontend is the only service exposed to the internet; API requests stay same-origin under `/api`.
-
-Set `SENTRY_DSN`, `SENTRY_ENVIRONMENT=render`, and `SENTRY_RELEASE` as Render environment variables to enable browser error reporting. The frontend generates `runtime-config.js` when its Nginx container starts; no DSN needs to be compiled into source code. Error events remove user, request body, cookies, and headers before sending.
-
-The checkout is explicitly a PayPal Sandbox demo. It displays a persistent test-payment notice and must not be described as real-money payment processing.
-
-## Project structure
-
-- `src/app/core`: application configuration, API services, authentication, and HTTP interceptors.
-- `src/app/features`: catalog, authentication, profile, checkout, cart, and administration features.
-- `src/app/shared`: reusable components and utilities.
-- `src/app/data`: application data and supporting models.
-
-## Backend dependency
-
-This client requires the separate `techstore-backend` service. Configure the backend's CORS allowlist and the frontend API base URL together when using a different origin or port.
-
-## Repository hygiene
-
-- Do not place passwords, API secrets, JWT secrets, PayPal secrets, or cloud credentials in frontend source files.
-- The frontend must only contain public configuration such as its API URL and Google browser client ID.
-- `node_modules`, generated build output, test coverage, and Angular cache files are ignored by Git.
+The production image runs Nginx with SPA fallback routing, gzip compression, and secure HTTP headers.

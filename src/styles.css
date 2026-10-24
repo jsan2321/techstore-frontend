@@ -86,14 +86,14 @@ html {
   --color-red-200: #fecaca;
   --color-red-700: #b91c1c;
 
-  --animate-marquee-ltr: marquee-ltr 25s linear infinite;
+  --animate-marquee-ltr: marquee-ltr 32s linear infinite;
   --animate-float: float 4s ease-in-out infinite;
   --animate-shake: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
   --animate-fade-in: fade-in 0.3s ease-out forwards;
 
   @keyframes marquee-ltr {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-50%); }
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
   }
 
   @keyframes float {
@@ -116,8 +116,19 @@ html {
 
 @layer utilities {
   .mask-fade-edges {
-    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  }
+
+  .animate-infinite-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee-ltr 32s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-infinite-marquee:hover {
+    animation-play-state: paused;
   }
 
   .hide-scrollbar,
