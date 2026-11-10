@@ -6,6 +6,18 @@
     <h2 class="mt-2 text-2xl font-semibold text-[color:var(--ink-900)]">Sign in</h2>
     <p class="mt-2 text-sm text-[color:var(--ink-700)]">Access your cart, orders, and profile.</p>
 
+    <!-- Demo Account Quick Fill -->
+    <div class="mt-4 flex items-center justify-between rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-100)]/50 px-4 py-2.5 text-xs text-[color:var(--ink-700)]">
+      <span>Demo customer account</span>
+      <button
+        type="button"
+        (click)="fillDemoCustomer()"
+        class="font-semibold text-[color:var(--accent-600)] hover:underline cursor-pointer"
+      >
+        Autofill credentials &rarr;
+      </button>
+    </div>
+
     @if (infoMessage()) {
       <div
         class="mt-4 rounded-2xl border border-[color:var(--sand-300)] bg-white/80 px-4 py-3 text-sm text-[color:var(--leaf-500)]"

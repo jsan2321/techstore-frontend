@@ -32,6 +32,18 @@
         </div>
       </div>
 
+      <!-- Demo Admin Quick Fill -->
+      <div class="mt-4 flex items-center justify-between rounded-2xl border border-[color:var(--sand-300)] bg-[color:var(--sand-100)]/70 px-4 py-2.5 text-xs text-[color:var(--ink-700)]">
+        <span>Demo administrator account</span>
+        <button
+          type="button"
+          (click)="fillDemoAdmin()"
+          class="font-semibold text-[color:var(--accent-600)] hover:underline cursor-pointer"
+        >
+          Autofill credentials &rarr;
+        </button>
+      </div>
+
       <form class="mt-6 grid gap-5" [formGroup]="form" (ngSubmit)="submit()" novalidate>
         <!-- Email -->
         <label class="block text-xs font-bold uppercase tracking-widest text-[color:var(--ink-700)]" for="admin-email">

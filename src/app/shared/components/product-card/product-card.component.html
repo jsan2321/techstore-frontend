@@ -1,8 +1,8 @@
 <article class="group flex h-full flex-col overflow-hidden rounded-3xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-  <div class="relative h-52 overflow-hidden bg-neutral-100/90 flex items-center justify-center p-4">
+  <div class="relative h-52 overflow-hidden bg-neutral-100">
     @if (product.imageUrl) {
       <img
-        class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105"
+        class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
         [src]="product.imageUrl"
         [alt]="product.name"
         loading="lazy"

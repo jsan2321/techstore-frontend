@@ -24,6 +24,13 @@ export class AdminLoginComponent {
     password: ['', [Validators.required]],
   });
 
+  fillDemoAdmin(): void {
+    this.form.patchValue({
+      email: 'admin@goodshopping.local',
+      password: 'Admin123!',
+    });
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

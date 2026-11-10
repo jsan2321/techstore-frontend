@@ -33,6 +33,13 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     password: ['', [Validators.required]]
   });
 
+  fillDemoCustomer(): void {
+    this.form.patchValue({
+      email: 'customer@techstore.local',
+      password: 'Customer123!'
+    });
+  }
+
   ngAfterViewInit(): void {
     void this.initializeGoogleSignIn();
   }
