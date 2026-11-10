@@ -77,6 +77,18 @@ npm start
 
 ---
 
+## 🔑 Demo & Pre-Seeded Accounts
+
+For evaluator and recruiter convenience, pre-verified accounts are seeded in the database:
+
+| Role | Email | Password | Access / Purpose |
+| :--- | :--- | :--- | :--- |
+| **Customer** | `customer@techstore.local` | `Customer123!` | Public storefront login at `/auth/login`. Pre-seeded with a default shipping address for instant 1-click cart & checkout evaluation. |
+| **Admin** | `admin@goodshopping.local` | `Admin123!` | Dedicated management login at `/admin/auth/login`. Direct access to `/admin` dashboard, inventory, orders, categories, and brands. |
+| **Google Sign-In** | *(Any personal Google account)* | *(Google OAuth)* | 1-click registration/sign-in via Google Identity Services button with instant verification. |
+
+---
+
 ## 🔑 Admin Portal Access
 
 The administrative dashboard is intentionally hidden from public customer navigation.
@@ -99,13 +111,13 @@ The administrative dashboard is intentionally hidden from public customer naviga
 When testing order placement in Sandbox mode:
 
 1. Add an in-stock product to your cart and proceed to `/checkout`.
-2. Fill in or select a shipping address.
+2. Fill in or select a shipping address (the pre-seeded customer has one pre-selected).
    * *Important*: The **Country** field requires a **2-letter ISO code** (e.g., `US`, `ES`, `CA`, `MX`).
 3. Click **Proceed to PayPal**.
-4. When the PayPal popup appears:
-   * ❌ **Do NOT use** the store's business email (`sb-...@business.example.com`) or PayPal will reject it with *"You cannot pay yourself"*.
-   * ✅ **Use a Personal Sandbox Account** (`sb-...@personal.example.com`) from your [PayPal Developer Dashboard](https://developer.paypal.com) under `Testing Tools` > `Sandbox Accounts`.
-5. Approve the test transaction to complete the order and verify inventory deduction.
+4. When the PayPal modal appears, sign in with the provided **Sandbox Personal Buyer** credentials:
+   * **Email**: `jsan0506@email.com`
+   * **Password**: `GS7Fq+X+`
+5. Approve the simulated transaction to complete the order, view the receipt, and verify automatic inventory deduction.
 
 ---
 

@@ -1,23 +1,23 @@
 <section class="space-y-6">
-  <!-- Breadcrumbs -->
-  @if (product()) {
-    <nav class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500" aria-label="Breadcrumb">
-      <a routerLink="/" class="hover:text-indigo-600 transition-colors">Home</a>
-      <span>/</span>
-      <a routerLink="/shop" class="hover:text-indigo-600 transition-colors">Shop</a>
-      <span>/</span>
-      <a [routerLink]="['/shop']" [queryParams]="{ category: product()!.category }" class="text-indigo-600 font-bold hover:underline transition-colors">
+  <!-- Navigation / Breadcrumbs -->
+  <nav class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-500" aria-label="Breadcrumb">
+    <a
+      routerLink="/shop"
+      class="inline-flex items-center gap-1.5 text-neutral-600 hover:text-blue-600 transition-colors"
+    >
+      &larr; Back to shop
+    </a>
+    @if (product()) {
+      <span class="text-neutral-300">/</span>
+      <a
+        [routerLink]="['/shop']"
+        [queryParams]="{ category: product()!.category }"
+        class="text-blue-600 font-bold hover:underline transition-colors"
+      >
         {{ product()!.category }}
       </a>
-    </nav>
-  }
-
-  <a
-    routerLink="/shop"
-    class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[color:var(--accent-600)] hover:underline"
-  >
-    &larr; Back to shop
-  </a>
+    }
+  </nav>
 
   @if (loading()) {
     <app-loading-spinner label="Loading product"></app-loading-spinner>
